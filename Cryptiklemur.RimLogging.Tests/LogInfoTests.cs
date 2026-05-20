@@ -208,4 +208,31 @@ public class LogInfoTests : IDisposable
         Assert.NotNull(entry.Context);
         Assert.Equal(99, entry.Context!["x"]);
     }
+
+    [Fact]
+    public void Info_Exception_DefaultChannel_PopulatesEntryException()
+    {
+        Exception ex = new InvalidOperationException("info-ex-test");
+
+        Log.Info(ex, "info-exception-message");
+
+        LogEntry? entry = Logging.LastEntry;
+        Assert.NotNull(entry);
+        Assert.Equal(LogLevel.Info, entry!.Level);
+        Assert.Same(ex, entry.Exception);
+    }
+
+    [Fact]
+    public void Info_Exception_ExplicitChannel_PopulatesEntryException()
+    {
+        Exception ex = new InvalidOperationException("info-ex-channel-test");
+
+        Log.Info("info-chan", ex, "info-exception-channel-message");
+
+        LogEntry? entry = Logging.LastEntry;
+        Assert.NotNull(entry);
+        Assert.Equal(LogLevel.Info, entry!.Level);
+        Assert.Equal("info-chan", entry.Channel);
+        Assert.Same(ex, entry.Exception);
+    }
 }
