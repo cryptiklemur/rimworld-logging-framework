@@ -1,6 +1,7 @@
 using Cryptiklemur.RimLogging.Capture;
 using Xunit;
 
+// Namespace outside Cryptiklemur.RimLogging.* so this test's frame is not skipped by WalkOnce.
 namespace RimLoggingTestsExternal.Capture;
 
 public class StackWalkerTests
