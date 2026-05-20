@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Cryptiklemur.RimLogging;
 using Cryptiklemur.RimLogging.Format;
@@ -8,24 +10,21 @@ namespace Cryptiklemur.RimLogging.Tests;
 public class LogInfoTests : IDisposable
 {
     private readonly LogLevel _savedMin;
-    private readonly LogEntry? _savedLast;
-    private readonly int _savedCount;
+    private readonly Action<LogEntry>? _savedOverride;
+    private readonly List<LogEntry> _captured = new List<LogEntry>();
 
     public LogInfoTests()
     {
         _savedMin = Logging.GlobalMinLevel;
-        _savedLast = Logging.LastEntry;
-        _savedCount = Logging.EntriesSeen;
+        _savedOverride = Logging._dispatchSyncOverride;
         Logging.GlobalMinLevel = LogLevel.Trace;
-        Logging.LastEntry = null;
-        Logging.EntriesSeen = 0;
+        Logging._dispatchSyncOverride = e => _captured.Add(e);
     }
 
     public void Dispose()
     {
         Logging.GlobalMinLevel = _savedMin;
-        Logging.LastEntry = _savedLast;
-        Logging.EntriesSeen = _savedCount;
+        Logging._dispatchSyncOverride = _savedOverride;
     }
 
     // Overload 1: params — must pass an explicit array to avoid overload 4 winning.
@@ -38,7 +37,7 @@ public class LogInfoTests : IDisposable
         // With zero args, the params array is empty and channel defaults to "default".
         Log.Info("user-info-test-A-sentinel");
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("default", entry!.Channel);
         Assert.Equal(LogLevel.Info, entry.Level);
@@ -54,7 +53,7 @@ public class LogInfoTests : IDisposable
 
         // Note: Log.Info(string, object?[]) resolves to overload 2 (template+array+caller-info).
         // Overload 2 uses CallerLineNumber/CallerFilePath so Source.IsCallerProvided == true.
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("default", entry!.Channel);
         Assert.Equal("user alice did thing test-A2", entry.RenderedMessage);
@@ -69,7 +68,7 @@ public class LogInfoTests : IDisposable
         // Requires the second arg to not be string/object?[] to pick this overload.
         Log.Info("msg-test-B", new { a = 1, b = "x" });
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("default", entry!.Channel);
         Assert.Equal("msg-test-B", entry.RenderedMessage);
@@ -84,7 +83,7 @@ public class LogInfoTests : IDisposable
         // Overload 4: (string channel, string template, object?[]? args = null, ...)
         Log.Info("audit", "hello {Who} test-C", new object?[] { "world" });
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("audit", entry!.Channel);
         Assert.Equal("hello world test-C", entry.RenderedMessage);
@@ -98,7 +97,7 @@ public class LogInfoTests : IDisposable
         // to verify EmitInternal routes them into SourceLocation correctly.
         Log.Info("caller-test-D template {X}", new object?[] { 42 }, line: 77, file: "/proj/Foo.cs");
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.True(entry!.Source.IsCallerProvided);
         Assert.Equal(77, entry.Source.Line);
@@ -109,11 +108,11 @@ public class LogInfoTests : IDisposable
     public void Info_BelowGlobalMinLevel_IsDropped()
     {
         Logging.GlobalMinLevel = LogLevel.Warn;
-        int countBefore = Logging.EntriesSeen;
+        int countBefore = _captured.Count;
 
         Log.Info("dropped message test-E");
 
-        Assert.Equal(countBefore, Logging.EntriesSeen);
+        Assert.Equal(countBefore, _captured.Count);
     }
 
     [Fact]
@@ -133,7 +132,7 @@ public class LogInfoTests : IDisposable
         Exception? thrown = Record.Exception(() => Log.Info((string)null!));
 
         Assert.Null(thrown);
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal(string.Empty, entry!.MessageTemplate);
         Assert.Equal(string.Empty, entry.RenderedMessage);
@@ -145,7 +144,7 @@ public class LogInfoTests : IDisposable
         // Overload 1 (params) with no args: rendered == template, context == null.
         Log.Info("literal message test-H");
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("literal message test-H", entry!.RenderedMessage);
         Assert.Null(entry.Context);
@@ -159,7 +158,7 @@ public class LogInfoTests : IDisposable
             Log.Info("default", "hello {Name} test-I", new object?[] { "alice", "extra" }));
 
         Assert.Null(thrown);
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("hello alice test-I", entry!.RenderedMessage);
     }
@@ -172,7 +171,7 @@ public class LogInfoTests : IDisposable
             Log.Info("default", "hi {A} {B} test-J", new object?[] { "only-a" }));
 
         Assert.Null(thrown);
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("hi only-a {B} test-J", entry!.RenderedMessage);
     }
@@ -182,8 +181,7 @@ public class LogInfoTests : IDisposable
     {
         Log.Info("emit-check test-K");
 
-        Assert.NotNull(Logging.LastEntry);
-        Assert.Equal(1, Logging.EntriesSeen);
+        Assert.Single(_captured);
     }
 
     [Fact]
@@ -191,7 +189,7 @@ public class LogInfoTests : IDisposable
     {
         Log.Info("level-check test-L");
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal(LogLevel.Info, entry!.Level);
     }
@@ -202,7 +200,7 @@ public class LogInfoTests : IDisposable
         // Overload 5: (string channel, string message, object context, ...)
         Log.Info("diagnostics", "structured-test-M", new { x = 99 });
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal("diagnostics", entry!.Channel);
         Assert.NotNull(entry.Context);
@@ -216,7 +214,7 @@ public class LogInfoTests : IDisposable
 
         Log.Info(ex, "info-exception-message");
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal(LogLevel.Info, entry!.Level);
         Assert.Same(ex, entry.Exception);
@@ -229,7 +227,7 @@ public class LogInfoTests : IDisposable
 
         Log.Info("info-chan", ex, "info-exception-channel-message");
 
-        LogEntry? entry = Logging.LastEntry;
+        LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
         Assert.NotNull(entry);
         Assert.Equal(LogLevel.Info, entry!.Level);
         Assert.Equal("info-chan", entry.Channel);
