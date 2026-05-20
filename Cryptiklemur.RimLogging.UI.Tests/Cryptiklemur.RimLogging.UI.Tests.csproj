@@ -16,7 +16,7 @@
                  Exclude="..\Cryptiklemur.RimLogging.UI\bin\**\*.cs;..\Cryptiklemur.RimLogging.UI\obj\**\*.cs;..\Cryptiklemur.RimLogging.UI\Window\**\*.cs;..\Cryptiklemur.RimLogging.UI\Panes\**\*.cs;..\Cryptiklemur.RimLogging.UI\Hijack\**\*.cs;..\Cryptiklemur.RimLogging.UI\Bootstrap\**\*.cs"
                  LinkBase="LinkedSource\UI" />
         <Compile Include="..\Cryptiklemur.RimLogging\**\*.cs"
-                 Exclude="..\Cryptiklemur.RimLogging\bin\**\*.cs;..\Cryptiklemur.RimLogging\obj\**\*.cs;..\Cryptiklemur.RimLogging\Hijack\**\*.cs;..\Cryptiklemur.RimLogging\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging\Settings\**\*.cs;..\Cryptiklemur.RimLogging\Sinks\VerseLogSink.cs;..\Cryptiklemur.RimLogging\Pipeline\ShutdownFlush.cs"
+                 Exclude="..\Cryptiklemur.RimLogging\bin\**\*.cs;..\Cryptiklemur.RimLogging\obj\**\*.cs;..\Cryptiklemur.RimLogging\Hijack\**\*.cs;..\Cryptiklemur.RimLogging\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging\Settings\**\*.cs;..\Cryptiklemur.RimLogging\Sinks\VerseLogSink.cs;..\Cryptiklemur.RimLogging\Sinks\SinkDef.cs;..\Cryptiklemur.RimLogging\Pipeline\ShutdownFlush.cs"
                  LinkBase="LinkedSource\Core" />
     </ItemGroup>
 
