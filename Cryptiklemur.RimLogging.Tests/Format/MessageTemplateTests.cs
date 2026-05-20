@@ -26,4 +26,36 @@ public class MessageTemplateTests
         Assert.Equal("", t.Raw);
         Assert.Empty(t.Holes);
     }
+
+    [Theory]
+    [InlineData("hello", new string[0], new[] { "hello" })]
+    [InlineData("hi {Name}", new[] { "Name" }, new[] { "hi ", "" })]
+    [InlineData("a {X} b {Y} c", new[] { "X", "Y" }, new[] { "a ", " b ", " c" })]
+    [InlineData("{Only}", new[] { "Only" }, new[] { "", "" })]
+    [InlineData("", new string[0], new[] { "" })]
+    public void Parse_ExtractsHolesAndSegments(string raw, string[] holes, string[] segments)
+    {
+        MessageTemplate t = MessageTemplate.Parse(raw);
+        Assert.Equal(raw, t.Raw);
+        Assert.Equal(holes, t.Holes);
+        Assert.Equal(segments, t.Segments);
+    }
+
+    [Fact]
+    public void Parse_EscapedBracesAreLiteral()
+    {
+        MessageTemplate t = MessageTemplate.Parse("literal {{not-a-hole}} here");
+        Assert.Empty(t.Holes);
+        Assert.Single(t.Segments);
+        Assert.Equal("literal {not-a-hole} here", t.Segments[0]);
+    }
+
+    [Fact]
+    public void Parse_UnclosedHoleIsLiteral()
+    {
+        MessageTemplate t = MessageTemplate.Parse("oops {Name");
+        Assert.Empty(t.Holes);
+        Assert.Single(t.Segments);
+        Assert.Equal("oops {Name", t.Segments[0]);
+    }
 }

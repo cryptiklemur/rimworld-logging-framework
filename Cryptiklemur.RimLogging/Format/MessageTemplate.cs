@@ -21,4 +21,67 @@ public sealed class MessageTemplate
         Holes = holes ?? throw new ArgumentNullException(nameof(holes));
         Segments = segments ?? throw new ArgumentNullException(nameof(segments));
     }
+
+    /// <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
+    public static MessageTemplate Parse(string raw)
+    {
+        if (raw == null) throw new ArgumentNullException(nameof(raw));
+        if (raw.Length == 0) return new MessageTemplate(raw, Array.Empty<string>(), new[] { string.Empty });
+
+        System.Text.StringBuilder seg = new System.Text.StringBuilder();
+        List<string> holes = new List<string>();
+        List<string> segments = new List<string>();
+        int i = 0;
+        while (i < raw.Length)
+        {
+            char c = raw[i];
+            if (c == '{' && i + 1 < raw.Length && raw[i + 1] == '{')
+            {
+                seg.Append('{');
+                i += 2;
+                continue;
+            }
+            if (c == '}' && i + 1 < raw.Length && raw[i + 1] == '}')
+            {
+                seg.Append('}');
+                i += 2;
+                continue;
+            }
+            if (c == '{')
+            {
+                int close = raw.IndexOf('}', i + 1);
+                if (close < 0)
+                {
+                    seg.Append(raw, i, raw.Length - i);
+                    i = raw.Length;
+                    continue;
+                }
+                string name = raw.Substring(i + 1, close - i - 1);
+                if (name.Length == 0 || ContainsBrace(name))
+                {
+                    seg.Append(raw, i, close - i + 1);
+                    i = close + 1;
+                    continue;
+                }
+                segments.Add(seg.ToString());
+                seg.Clear();
+                holes.Add(name);
+                i = close + 1;
+                continue;
+            }
+            seg.Append(c);
+            i++;
+        }
+        segments.Add(seg.ToString());
+        return new MessageTemplate(raw, holes, segments);
+    }
+
+    private static bool ContainsBrace(string s)
+    {
+        for (int i = 0; i < s.Length; i++)
+        {
+            if (s[i] == '{' || s[i] == '}') return true;
+        }
+        return false;
+    }
 }
