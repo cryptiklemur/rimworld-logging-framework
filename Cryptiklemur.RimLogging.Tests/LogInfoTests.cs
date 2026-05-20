@@ -177,7 +177,7 @@ public class LogInfoTests : IDisposable
     }
 
     [Fact]
-    public void Info_EmitWritesToLastEntry()
+    public void Info_EmitCapturedThroughDispatchSync()
     {
         Log.Info("emit-check test-K");
 
