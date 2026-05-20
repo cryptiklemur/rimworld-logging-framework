@@ -76,6 +76,37 @@ public sealed class MessageTemplate
         return new MessageTemplate(raw, holes, segments);
     }
 
+    /// <summary>Renders the template by substituting positional args into holes and returns the formatted string plus a name-to-value context dictionary.</summary>
+    public (string Rendered, IReadOnlyDictionary<string, object?>? Context) Render(object?[] args)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(Raw.Length + 16);
+        Dictionary<string, object?>? ctx = Holes.Count > 0 ? new Dictionary<string, object?>(Holes.Count) : null;
+        for (int i = 0; i < Holes.Count; i++)
+        {
+            sb.Append(Segments[i]);
+            if (i < args.Length)
+            {
+                object? v = args[i];
+                sb.Append(FormatArg(v));
+                ctx![Holes[i]] = v;
+            }
+            else
+            {
+                sb.Append('{').Append(Holes[i]).Append('}');
+            }
+        }
+        sb.Append(Segments[Holes.Count]);
+        return (sb.ToString(), ctx);
+    }
+
+    private static string FormatArg(object? v) => v switch
+    {
+        null => string.Empty,
+        string s => s,
+        IFormattable f => f.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+        _ => v.ToString() ?? string.Empty,
+    };
+
     private static bool ContainsBrace(string s)
     {
         for (int i = 0; i < s.Length; i++)
