@@ -49,7 +49,7 @@
         <HasLocalLightweave Condition="Exists('$(LightweaveAssembliesPath)\Lightweave.dll')">true</HasLocalLightweave>
     </PropertyGroup>
 
-    <ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(IsTestProject)' != 'true'">
         <Reference>
             <Private>False</Private>
         </Reference>
