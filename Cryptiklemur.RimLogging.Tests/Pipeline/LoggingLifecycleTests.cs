@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cryptiklemur.RimLogging;
+using Cryptiklemur.RimLogging.Sinks;
 using Xunit;
 
 namespace Cryptiklemur.RimLogging.Tests.Pipeline;
@@ -8,20 +9,19 @@ namespace Cryptiklemur.RimLogging.Tests.Pipeline;
 public class LoggingLifecycleTests : IDisposable
 {
     private readonly LogLevel _savedMin;
-    private readonly Action<LogEntry>? _savedOverride;
 
     public LoggingLifecycleTests()
     {
         _savedMin = Logging.GlobalMinLevel;
-        _savedOverride = Logging._dispatchSyncOverride;
+        SinkRegistry.DisposeAll();
         Logging.GlobalMinLevel = LogLevel.Trace;
     }
 
     public void Dispose()
     {
         Logging.Shutdown();
+        SinkRegistry.DisposeAll();
         Logging.GlobalMinLevel = _savedMin;
-        Logging._dispatchSyncOverride = _savedOverride;
     }
 
     [Fact]
@@ -29,18 +29,17 @@ public class LoggingLifecycleTests : IDisposable
     {
         Logging.Init();
 
-        Action<LogEntry>? firstCapture = null;
-        Logging._dispatchSyncOverride = e => firstCapture = Logging._dispatchSyncOverride;
+        bool dispatched = false;
+        ManualResetEventSlim ready = new ManualResetEventSlim(false);
+        MemoryLogSink sink = new MemoryLogSink();
+        SinkRegistry.Register(sink);
 
         Logging.Init();
 
-        // A second Init must not replace the drain -- the override set after first Init
-        // is still reachable (queue/drain same instance means drain thread is alive).
-        // Simplest observable: call EnsureStarted then Init, both are no-ops beyond first.
-        // Verify the drain thread is still running by posting and receiving on same override.
-        bool dispatched = false;
-        ManualResetEventSlim ready = new ManualResetEventSlim(false);
-        Logging._dispatchSyncOverride = e => { dispatched = true; ready.Set(); };
+        // A second Init must not replace the drain -- queue/drain same instance means drain thread is alive.
+        // Verify the drain thread is still running by posting and receiving via the sink.
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(_ => { dispatched = true; ready.Set(); });
+        SinkRegistry.Register(captureSink);
 
         Log.Info("idempotency-check");
 
@@ -57,7 +56,8 @@ public class LoggingLifecycleTests : IDisposable
         // After Shutdown, Emit should route synchronously (drain == null).
         int callingThreadId = Thread.CurrentThread.ManagedThreadId;
         int dispatchedThreadId = -1;
-        Logging._dispatchSyncOverride = e => dispatchedThreadId = Thread.CurrentThread.ManagedThreadId;
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
+        SinkRegistry.Register(captureSink);
 
         Log.Info("shutdown-test");
 
@@ -72,7 +72,8 @@ public class LoggingLifecycleTests : IDisposable
 
         int callingThreadId = Thread.CurrentThread.ManagedThreadId;
         int dispatchedThreadId = -1;
-        Logging._dispatchSyncOverride = e => dispatchedThreadId = Thread.CurrentThread.ManagedThreadId;
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
+        SinkRegistry.Register(captureSink);
 
         Log.Info("post-shutdown-emit");
 
@@ -87,7 +88,8 @@ public class LoggingLifecycleTests : IDisposable
 
         bool dispatched = false;
         ManualResetEventSlim ready = new ManualResetEventSlim(false);
-        Logging._dispatchSyncOverride = e => { dispatched = true; ready.Set(); };
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(_ => { dispatched = true; ready.Set(); });
+        SinkRegistry.Register(captureSink);
 
         Logging.Init(); // must be a no-op for queue/drain
 
@@ -97,3 +99,4 @@ public class LoggingLifecycleTests : IDisposable
         Assert.True(dispatched);
     }
 }
+

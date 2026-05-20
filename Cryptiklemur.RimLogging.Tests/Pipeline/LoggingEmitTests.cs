@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cryptiklemur.RimLogging;
+using Cryptiklemur.RimLogging.Sinks;
 using Xunit;
 
 namespace Cryptiklemur.RimLogging.Tests.Pipeline;
@@ -9,12 +9,13 @@ namespace Cryptiklemur.RimLogging.Tests.Pipeline;
 public class LoggingEmitTests : IDisposable
 {
     private readonly LogLevel _savedMin;
-    private readonly Action<LogEntry>? _savedOverride;
+    private readonly MemoryLogSink _sink = new MemoryLogSink();
 
     public LoggingEmitTests()
     {
         _savedMin = Logging.GlobalMinLevel;
-        _savedOverride = Logging._dispatchSyncOverride;
+        SinkRegistry.DisposeAll();
+        SinkRegistry.Register(_sink);
         Logging.GlobalMinLevel = LogLevel.Trace;
     }
 
@@ -22,7 +23,8 @@ public class LoggingEmitTests : IDisposable
     {
         Logging.StopForTests();
         Logging.GlobalMinLevel = _savedMin;
-        Logging._dispatchSyncOverride = _savedOverride;
+        SinkRegistry.Remove(_sink);
+        _sink.Dispose();
     }
 
     [Fact]
@@ -30,11 +32,12 @@ public class LoggingEmitTests : IDisposable
     {
         int callingThreadId = Thread.CurrentThread.ManagedThreadId;
         int dispatchedThreadId = -1;
-
-        Logging._dispatchSyncOverride = e => dispatchedThreadId = Thread.CurrentThread.ManagedThreadId;
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
+        SinkRegistry.Register(captureSink);
 
         Log.Error("sync-bypass-test");
 
+        SinkRegistry.Remove(captureSink);
         Assert.Equal(callingThreadId, dispatchedThreadId);
     }
 
@@ -44,18 +47,20 @@ public class LoggingEmitTests : IDisposable
         int callingThreadId = Thread.CurrentThread.ManagedThreadId;
         ManualResetEventSlim dispatched = new ManualResetEventSlim(false);
         int dispatchedThreadId = -1;
-
-        Logging._dispatchSyncOverride = e =>
+        ThreadCaptureSink captureSink = new ThreadCaptureSink(id =>
         {
-            dispatchedThreadId = Thread.CurrentThread.ManagedThreadId;
+            dispatchedThreadId = id;
             dispatched.Set();
-        };
+        });
+        SinkRegistry.Register(captureSink);
 
         Logging.EnsureStarted();
         Log.Info("async-drain-test");
 
         bool signaled = dispatched.Wait(5000);
+        SinkRegistry.Remove(captureSink);
         Assert.True(signaled, "Drain thread did not dispatch within 5 s");
         Assert.NotEqual(callingThreadId, dispatchedThreadId);
     }
 }
+

@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Cryptiklemur.RimLogging;
+using Cryptiklemur.RimLogging.Sinks;
 using Xunit;
 
 namespace Cryptiklemur.RimLogging.Tests
@@ -8,21 +8,21 @@ namespace Cryptiklemur.RimLogging.Tests
     public class LogFatalTests : IDisposable
     {
         private readonly LogLevel _savedMin;
-        private readonly Action<LogEntry>? _savedOverride;
-        private readonly List<LogEntry> _captured = new List<LogEntry>();
+        private readonly MemoryLogSink _sink = new MemoryLogSink();
 
         public LogFatalTests()
         {
             _savedMin = Logging.GlobalMinLevel;
-            _savedOverride = Logging._dispatchSyncOverride;
+            SinkRegistry.DisposeAll();
+            SinkRegistry.Register(_sink);
             Logging.GlobalMinLevel = LogLevel.Trace;
-            Logging._dispatchSyncOverride = e => _captured.Add(e);
         }
 
         public void Dispose()
         {
             Logging.GlobalMinLevel = _savedMin;
-            Logging._dispatchSyncOverride = _savedOverride;
+            SinkRegistry.Remove(_sink);
+            _sink.Dispose();
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Cryptiklemur.RimLogging.Tests
         {
             Log.Fatal("fatal-level-test-sentinel");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal(LogLevel.Fatal, entry!.Level);
             Assert.Equal("default", entry.Channel);
@@ -43,7 +43,7 @@ namespace Cryptiklemur.RimLogging.Tests
 
             Log.Fatal(ex, "fatal-exception-message");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal(LogLevel.Fatal, entry!.Level);
             Assert.Same(ex, entry.Exception);
@@ -56,7 +56,7 @@ namespace Cryptiklemur.RimLogging.Tests
 
             Log.Fatal("fatal-chan", ex, "fatal-exception-channel-message");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal(LogLevel.Fatal, entry!.Level);
             Assert.Equal("fatal-chan", entry.Channel);
@@ -68,7 +68,7 @@ namespace Cryptiklemur.RimLogging.Tests
         {
             Log.Fatal("fatal-audit", "explicit-channel-fatal-sentinel");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal("fatal-audit", entry!.Channel);
             Assert.Equal(LogLevel.Fatal, entry.Level);

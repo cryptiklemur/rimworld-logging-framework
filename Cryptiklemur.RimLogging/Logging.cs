@@ -1,5 +1,6 @@
 using System;
 using Cryptiklemur.RimLogging.Pipeline;
+using Cryptiklemur.RimLogging.Sinks;
 
 namespace Cryptiklemur.RimLogging;
 
@@ -9,7 +10,6 @@ public static class Logging
     private static MpscQueue<LogEntry>? _queue;
     private static BackgroundDrain? _drain;
 #pragma warning disable CS0649
-    internal static Action<LogEntry>? _dispatchSyncOverride; // tests only
     internal static Action<BackgroundDrain>? _installShutdownHook;
 #pragma warning restore CS0649
 
@@ -30,8 +30,7 @@ public static class Logging
 
     internal static void DispatchSync(LogEntry entry)
     {
-        if (_dispatchSyncOverride != null) { _dispatchSyncOverride(entry); return; }
-        // TODO Phase 4: wire SinkRegistry.DispatchSynchronously(entry);
+        SinkRegistry.DispatchSynchronously(entry);
     }
 
     /// <summary>Lazy initializer used by internal paths.</summary>

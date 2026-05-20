@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Cryptiklemur.RimLogging;
+using Cryptiklemur.RimLogging.Sinks;
 using Xunit;
 
 namespace Cryptiklemur.RimLogging.Tests
@@ -8,21 +8,21 @@ namespace Cryptiklemur.RimLogging.Tests
     public class LogTraceTests : IDisposable
     {
         private readonly LogLevel _savedMin;
-        private readonly Action<LogEntry>? _savedOverride;
-        private readonly List<LogEntry> _captured = new List<LogEntry>();
+        private readonly MemoryLogSink _sink = new MemoryLogSink();
 
         public LogTraceTests()
         {
             _savedMin = Logging.GlobalMinLevel;
-            _savedOverride = Logging._dispatchSyncOverride;
+            SinkRegistry.DisposeAll();
+            SinkRegistry.Register(_sink);
             Logging.GlobalMinLevel = LogLevel.Trace;
-            Logging._dispatchSyncOverride = e => _captured.Add(e);
         }
 
         public void Dispose()
         {
             Logging.GlobalMinLevel = _savedMin;
-            Logging._dispatchSyncOverride = _savedOverride;
+            SinkRegistry.Remove(_sink);
+            _sink.Dispose();
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Cryptiklemur.RimLogging.Tests
         {
             Log.Trace("trace-level-test-sentinel");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal(LogLevel.Trace, entry!.Level);
             Assert.Equal("default", entry.Channel);
@@ -43,7 +43,7 @@ namespace Cryptiklemur.RimLogging.Tests
 
             Log.Trace(ex, "trace-exception-message");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal(LogLevel.Trace, entry!.Level);
             Assert.Same(ex, entry.Exception);
@@ -56,7 +56,7 @@ namespace Cryptiklemur.RimLogging.Tests
 
             Log.Trace("trace-chan", ex, "trace-exception-channel-message");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal(LogLevel.Trace, entry!.Level);
             Assert.Equal("trace-chan", entry.Channel);
@@ -67,11 +67,11 @@ namespace Cryptiklemur.RimLogging.Tests
         public void Trace_BelowGlobalMinLevel_IsDropped()
         {
             Logging.GlobalMinLevel = LogLevel.Debug;
-            int countBefore = _captured.Count;
+            int countBefore = _sink.Entries.Count;
 
             Log.Trace("dropped-trace-sentinel");
 
-            Assert.Equal(countBefore, _captured.Count);
+            Assert.Equal(countBefore, _sink.Entries.Count);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Cryptiklemur.RimLogging.Tests
         {
             Log.Trace("trace-audit", "explicit-channel-trace-sentinel");
 
-            LogEntry? entry = _captured.Count > 0 ? _captured[_captured.Count - 1] : null;
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
             Assert.NotNull(entry);
             Assert.Equal("trace-audit", entry!.Channel);
             Assert.Equal(LogLevel.Trace, entry.Level);
