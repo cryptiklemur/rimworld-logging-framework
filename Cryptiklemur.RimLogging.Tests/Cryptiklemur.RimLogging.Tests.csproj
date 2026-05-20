@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <Compile Include="..\Cryptiklemur.RimLogging\**\*.cs"
-                 Exclude="..\Cryptiklemur.RimLogging\bin\**\*.cs;..\Cryptiklemur.RimLogging\obj\**\*.cs;..\Cryptiklemur.RimLogging\Hijack\**\*.cs;..\Cryptiklemur.RimLogging\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging\Settings\**\*.cs;..\Cryptiklemur.RimLogging\Sinks\VerseLogSink.cs"
+                 Exclude="..\Cryptiklemur.RimLogging\bin\**\*.cs;..\Cryptiklemur.RimLogging\obj\**\*.cs;..\Cryptiklemur.RimLogging\Hijack\**\*.cs;..\Cryptiklemur.RimLogging\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging\Settings\**\*.cs;..\Cryptiklemur.RimLogging\Sinks\VerseLogSink.cs;..\Cryptiklemur.RimLogging\Pipeline\ShutdownFlush.cs"
                  LinkBase="LinkedSource" />
     </ItemGroup>
 
