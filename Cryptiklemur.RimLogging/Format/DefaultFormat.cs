@@ -8,6 +8,25 @@ namespace Cryptiklemur.RimLogging.Format
 
         public static string Render(string template, LogEntry entry, bool stripRichText)
         {
+            return RenderInternal(template, entry, stripRichText, stopToken: null);
+        }
+
+        /// <summary>
+        /// Renders all format tokens that appear <em>before</em> the <c>{message}</c> token,
+        /// returning the prefix segment (including any literal text immediately preceding
+        /// <c>{message}</c>). When the template contains no <c>{message}</c> token, the full
+        /// rendered template is returned.
+        /// </summary>
+        /// <param name="template">The format template string.</param>
+        /// <param name="entry">The log entry supplying token values.</param>
+        /// <param name="stripRichText">When <c>true</c>, rich-text tags are stripped from token values.</param>
+        public static string RenderPrefixOnly(string template, LogEntry entry, bool stripRichText)
+        {
+            return RenderInternal(template, entry, stripRichText, stopToken: "message");
+        }
+
+        private static string RenderInternal(string template, LogEntry entry, bool stripRichText, string? stopToken)
+        {
             System.Text.StringBuilder sb = new System.Text.StringBuilder(template.Length + entry.RenderedMessage.Length + 64);
             int i = 0;
             while (i < template.Length)
@@ -18,6 +37,7 @@ namespace Cryptiklemur.RimLogging.Format
                     int close = template.IndexOf('}', i + 1);
                     if (close < 0) { sb.Append(template, i, template.Length - i); break; }
                     string token = template.Substring(i + 1, close - i - 1);
+                    if (stopToken != null && token == stopToken) return sb.ToString();
                     sb.Append(ResolveToken(token, entry, stripRichText));
                     i = close + 1;
                     continue;
