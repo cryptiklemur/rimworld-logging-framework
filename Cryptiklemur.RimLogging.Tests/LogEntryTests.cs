@@ -36,4 +36,44 @@ public class LogEntryTests
         Assert.Null(e.StackTrace);
         Assert.Null(e.Exception);
     }
+
+    [Fact]
+    public void Construct_ThrowsOnNullChannel()
+    {
+        SourceLocation src = new SourceLocation("Player.cs", 1, "Init");
+
+        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
+            new LogEntry(
+                timestamp: DateTime.UtcNow,
+                level: LogLevel.Info,
+                channel: null!,
+                messageTemplate: "msg",
+                renderedMessage: "msg",
+                context: null,
+                source: src,
+                stackTrace: null,
+                exception: null));
+
+        Assert.Equal("channel", ex.ParamName);
+    }
+
+    [Fact]
+    public void Construct_CoalescesNullTemplatesToEmpty()
+    {
+        SourceLocation src = new SourceLocation("Player.cs", 1, "Init");
+
+        LogEntry e = new LogEntry(
+            timestamp: DateTime.UtcNow,
+            level: LogLevel.Info,
+            channel: "Test",
+            messageTemplate: null!,
+            renderedMessage: null!,
+            context: null,
+            source: src,
+            stackTrace: null,
+            exception: null);
+
+        Assert.Equal(string.Empty, e.MessageTemplate);
+        Assert.Equal(string.Empty, e.RenderedMessage);
+    }
 }
