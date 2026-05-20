@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main, beta]
+  pull_request:
+    branches: [main, beta]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: dotnet restore
+        run: dotnet restore Cryptiklemur.RimLogging.sln
+
+      - name: dotnet build
+        run: dotnet build Cryptiklemur.RimLogging.sln -c Release --nologo --no-restore
+
+      - name: dotnet test
+        run: dotnet test Cryptiklemur.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"

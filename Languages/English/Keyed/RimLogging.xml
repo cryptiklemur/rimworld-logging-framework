@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <CRL_Settings_GlobalMinLevel>Global minimum log level</CRL_Settings_GlobalMinLevel>
+    <CRL_Settings_LogDir>Log directory</CRL_Settings_LogDir>
+    <CRL_Settings_Retention>Retained log files</CRL_Settings_Retention>
+</LanguageData>

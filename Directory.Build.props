@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <PropertyGroup>
+        <Authors>CryptikLemur</Authors>
+        <Company>CryptikLemur</Company>
+        <Copyright>Copyright (c) 2026 CryptikLemur</Copyright>
+        <PackageProjectUrl>https://github.com/cryptiklemur/rimworld-logging-framework</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/cryptiklemur/rimworld-logging-framework</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <EnableNETAnalyzers>True</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <WarningLevel>4</WarningLevel>
+        <ErrorReport>prompt</ErrorReport>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <FileAlignment>512</FileAlignment>
+
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <PlatformTarget Condition=" '$(Platform)' == '' ">AnyCPU</PlatformTarget>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+        <Optimize>false</Optimize>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>portable</DebugType>
+        <Optimize>true</Optimize>
+        <DefineConstants>TRACE</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <HasLocalRimWorld>false</HasLocalRimWorld>
+        <HasLocalRimWorld Condition="Exists('..\..\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
+        <HasLocalRimWorld Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">true</HasLocalRimWorld>
+        <HasLocalRimWorld Condition="Exists('/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed')">true</HasLocalRimWorld>
+        <HasLocalRimWorld Condition="Exists('/mnt/games/RimWorld/RimWorldLinux_Data/Managed')">true</HasLocalRimWorld>
+
+        <LightweaveAssembliesPath Condition="'$(LightweaveAssembliesPath)' == ''">$(MSBuildThisFileDirectory)..\..\RimworldCosmere\Lightweave\Assemblies</LightweaveAssembliesPath>
+        <HasLocalLightweave>false</HasLocalLightweave>
+        <HasLocalLightweave Condition="Exists('$(LightweaveAssembliesPath)\Lightweave.dll')">true</HasLocalLightweave>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Reference>
+            <Private>False</Private>
+        </Reference>
+        <ProjectReference>
+            <Private>False</Private>
+        </ProjectReference>
+        <PackageReference>
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <Using Include="System.Linq"/>
+        <Using Include="System.Collections.Generic"/>
+    </ItemGroup>
+</Project>

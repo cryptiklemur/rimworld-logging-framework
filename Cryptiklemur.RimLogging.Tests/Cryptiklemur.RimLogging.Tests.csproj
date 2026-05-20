@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Cryptiklemur.RimLogging.Tests</RootNamespace>
+        <AssemblyName>Cryptiklemur.RimLogging.Tests</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Cryptiklemur.RimLogging\Cryptiklemur.RimLogging.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1"/>
+        <PackageReference Include="xunit" Version="2.9.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <Reference Include="..\..\RimWorldWin64_Data\Managed\*.dll" Condition="Exists('..\..\RimWorldWin64_Data\Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\*.dll" Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed/*.dll" Condition="Exists('/mnt/games/SteamLibrary/steamapps/common/RimWorld/RimWorldLinux_Data/Managed')">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="/mnt/games/RimWorld/RimWorldLinux_Data/Managed/*.dll" Condition="Exists('/mnt/games/RimWorld/RimWorldLinux_Data/Managed')">
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(HasLocalRimWorld)' == 'false'">
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*"/>
+    </ItemGroup>
+</Project>

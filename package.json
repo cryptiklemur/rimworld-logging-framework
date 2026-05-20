@@ -1,0 +1,24 @@
+{
+    "name": "rimworld-logging-framework",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "description": "Public structured logging framework for RimWorld 1.6+ mods.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cryptiklemur/rimworld-logging-framework"
+    },
+    "scripts": {
+        "build": "make build",
+        "test": "make test",
+        "release": "semantic-release"
+    },
+    "devDependencies": {
+        "@semantic-release/commit-analyzer": "^13.0.0",
+        "@semantic-release/git": "^10.0.1",
+        "@semantic-release/github": "^11.0.0",
+        "@semantic-release/release-notes-generator": "^14.0.1",
+        "semantic-release": "^24.1.2",
+        "semantic-release-replace-plugin": "^1.2.7"
+    }
+}

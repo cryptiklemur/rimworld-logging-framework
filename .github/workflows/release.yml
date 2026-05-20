@@ -1,0 +1,58 @@
+name: release
+
+on:
+  push:
+    branches: [main, beta]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: semantic-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install release dependencies
+        run: npm install
+
+      - name: dotnet restore
+        run: dotnet restore Cryptiklemur.RimLogging.sln
+
+      - name: dotnet build
+        run: dotnet build Cryptiklemur.RimLogging.sln -c Release --nologo --no-restore
+
+      - name: dotnet test
+        run: dotnet test Cryptiklemur.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"
+
+      - name: dotnet pack
+        run: |
+          dotnet pack Cryptiklemur.RimLogging/Cryptiklemur.RimLogging.csproj -c Release --nologo -o out/nupkg
+          dotnet pack Cryptiklemur.RimLogging.UI/Cryptiklemur.RimLogging.UI.csproj -c Release --nologo -o out/nupkg
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
