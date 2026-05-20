@@ -1,3 +1,5 @@
+using System;
+
 namespace Cryptiklemur.RimLogging.Pipeline;
 
 /// <summary>
