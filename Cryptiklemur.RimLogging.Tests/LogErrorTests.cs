@@ -64,6 +64,21 @@ namespace Cryptiklemur.RimLogging.Tests
         }
 
         [Fact]
+        public void Error_Exception_RenderedMessageIsMessageArg()
+        {
+            InvalidOperationException ex = new InvalidOperationException("boom");
+
+            Log.Error(ex, "save failed");
+
+            LogEntry? entry = _sink.Entries.Count > 0 ? _sink.Entries[_sink.Entries.Count - 1] : null;
+            Assert.NotNull(entry);
+            Assert.Equal("save failed", entry!.RenderedMessage);
+            Assert.Same(ex, entry.Exception);
+            Assert.IsType<InvalidOperationException>(entry.Exception);
+            Assert.Equal("boom", entry.Exception.Message);
+        }
+
+        [Fact]
         public void Error_BelowGlobalMinLevel_IsDropped()
         {
             Logging.GlobalMinLevel = LogLevel.Fatal;

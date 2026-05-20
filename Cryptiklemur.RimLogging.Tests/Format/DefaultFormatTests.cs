@@ -219,6 +219,60 @@ public class DefaultFormatTests
     [Fact]
     public void Default_Constant_HasExpectedValue()
     {
-        Assert.Equal("[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}", DefaultFormat.Default);
+        Assert.Equal("[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}", DefaultFormat.Default);
+    }
+
+    [Fact]
+    public void Render_ExcToken_NullException_ReturnsEmpty()
+    {
+        LogEntry entry = MakeEntry();
+
+        string result = DefaultFormat.Render("{exc}", entry, stripRichText: false);
+
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public void Render_ExcToken_WithException_ReturnsNewlinePrefixedString()
+    {
+        InvalidOperationException ex = new InvalidOperationException("boom");
+        LogEntry entry = new LogEntry(
+            timestamp: new DateTime(2025, 1, 2, 3, 4, 5, 678, DateTimeKind.Utc),
+            level: LogLevel.Error,
+            channel: "default",
+            messageTemplate: "oops",
+            renderedMessage: "oops",
+            context: null,
+            source: SourceLocation.Empty,
+            stackTrace: null,
+            exception: ex);
+
+        string result = DefaultFormat.Render("{exc}", entry, stripRichText: false);
+
+        Assert.StartsWith("\n", result);
+        Assert.Contains("InvalidOperationException", result);
+        Assert.Contains("boom", result);
+    }
+
+    [Fact]
+    public void Render_DefaultTemplate_WithException_AppendsExceptionBlock()
+    {
+        InvalidOperationException ex = new InvalidOperationException("boom");
+        SourceLocation source = new SourceLocation("Foo.cs", 10, "Bar");
+        LogEntry entry = new LogEntry(
+            timestamp: new DateTime(2025, 6, 15, 12, 0, 0, 0, DateTimeKind.Utc),
+            level: LogLevel.Error,
+            channel: "combat",
+            messageTemplate: "save failed",
+            renderedMessage: "save failed",
+            context: null,
+            source: source,
+            stackTrace: null,
+            exception: ex);
+
+        string result = DefaultFormat.Render(DefaultFormat.Default, entry, stripRichText: false);
+
+        Assert.StartsWith("[2025-06-15 12:00:00.000] [ERROR] [combat] [Foo.cs:10] save failed", result);
+        Assert.Contains("\nSystem.InvalidOperationException: boom", result);
     }
 }

@@ -4,7 +4,7 @@ namespace Cryptiklemur.RimLogging.Format
 {
     public static class DefaultFormat
     {
-        public const string Default = "[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}";
+        public const string Default = "[{ts}] [{level}] [{channel}] [{source}] {message}{ctx}{exc}";
 
         public static string Render(string template, LogEntry entry, bool stripRichText)
         {
@@ -58,6 +58,7 @@ namespace Cryptiklemur.RimLogging.Format
                 case "source":  return e.Source.IsCallerProvided ? e.Source.File + ":" + e.Source.Line : "?:0";
                 case "message": return strip ? RichText.Strip(e.RenderedMessage) : e.RenderedMessage;
                 case "ctx":     return RenderUnconsumedContext(e);
+                case "exc":     return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;
                 default:        return "{" + token + "}";
             }
         }
