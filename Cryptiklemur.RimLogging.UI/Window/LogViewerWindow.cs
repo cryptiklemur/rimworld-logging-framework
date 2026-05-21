@@ -6,9 +6,13 @@ namespace Cryptiklemur.RimLogging.UI.Window;
 
 internal sealed class LogViewerWindow : LightweaveWindow {
     private readonly UISink _sink;
+    private readonly ChannelTreePane _channelTreePane;
+    private readonly LogListPane _logListPane;
 
     public LogViewerWindow(UISink sink) {
         _sink = sink;
+        _channelTreePane = new ChannelTreePane(sink);
+        _logListPane = new LogListPane(sink, _channelTreePane);
     }
 
     protected override float WidthFraction => 0.85f;
@@ -20,16 +24,15 @@ internal sealed class LogViewerWindow : LightweaveWindow {
     }
 
     protected override LightweaveNode Body() {
-        ChannelTreePane channelPane = new ChannelTreePane(_sink);
         LightweaveNode detailPane = Box.Create(id: "detail-pane-placeholder");
 
         LightweaveNode centerColumn = Column.Create(children: cols => {
             cols.Add(Box.Create(id: "filter-bar-placeholder"));
-            cols.Add(Box.Create(id: "log-list-placeholder"));
+            cols.Add(_logListPane.Build());
         });
 
         return HStack.Create(children: row => {
-            row.Add(channelPane.Build(), 280f);
+            row.Add(_channelTreePane.Build(), 280f);
             row.AddFlex(centerColumn);
             row.Add(detailPane, 360f);
         });
