@@ -12,6 +12,7 @@ internal static class Log_TryOpenLogWindow_Patch
 {
     static bool Prefix()
     {
+        if (VanillaBridge.ForceVanilla) return true;
         UISink? sink = FindUISink();
         if (sink == null) return true;
         Verse.Find.WindowStack.Add(new LogViewerWindow(sink));
