@@ -36,9 +36,15 @@ internal static class SinkLoader
             if (type == typeof(RollingTextFileSink) || type == typeof(RollingJsonFileSink))
             {
                 Settings.LoggingSettings s = Settings.LoggingMod.Settings;
-                return (ILogSink?)System.Activator.CreateInstance(type, s.logDirectory, s.retentionCount);
+                return (ILogSink?)System.Activator.CreateInstance(type, s.logDirectory, s.retentionCount, def.minLevel);
             }
 
+            if (type == typeof(VerseLogSink))
+            {
+                return (ILogSink?)System.Activator.CreateInstance(type, def.minLevel);
+            }
+
+            // Unknown but instantiable ILogSink — try parameterless ctor.
             return (ILogSink?)System.Activator.CreateInstance(type);
         }
         catch (System.Exception ex)
