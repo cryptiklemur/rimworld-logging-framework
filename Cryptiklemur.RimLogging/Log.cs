@@ -541,4 +541,24 @@ public static class Log
         if (idx >= 0) clean = clean.Substring(idx + 1);
         return clean.Replace(".cs", string.Empty);
     }
+
+    /// <summary>
+    /// Entry point for <c>UnityLogBridge</c>: builds a <see cref="LogEntry"/> with the
+    /// Unity-supplied stack trace and routes it through the pipeline.
+    /// </summary>
+    internal static void EmitInternalForUnity(LogLevel level, string channel, string condition, string stackTrace)
+    {
+        if (level < Logging.GlobalMinLevel) return;
+        LogEntry e = new LogEntry(
+            timestamp: System.DateTime.UtcNow,
+            level: level,
+            channel: channel,
+            messageTemplate: condition ?? string.Empty,
+            renderedMessage: condition ?? string.Empty,
+            context: null,
+            source: SourceLocation.Empty,
+            stackTrace: stackTrace,
+            exception: null);
+        Logging.Emit(e);
+    }
 }
