@@ -63,5 +63,7 @@ public static class Logging
 
     public static bool RemoveSink(ILogSink sink) => Sinks.SinkRegistry.Remove(sink);
 
+    public static IReadOnlyList<ILogSink> RegisteredSinks => Sinks.SinkRegistry.Snapshot();
+
     internal static void StopForTests() => Shutdown();
 }
