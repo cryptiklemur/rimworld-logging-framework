@@ -20,7 +20,7 @@ internal sealed class LogViewerWindow : LightweaveWindow {
     }
 
     protected override LightweaveNode Body() {
-        LightweaveNode channelPane = Box.Create(id: "channel-pane-placeholder");
+        ChannelTreePane channelPane = new ChannelTreePane(_sink);
         LightweaveNode detailPane = Box.Create(id: "detail-pane-placeholder");
 
         LightweaveNode centerColumn = Column.Create(children: cols => {
@@ -29,7 +29,7 @@ internal sealed class LogViewerWindow : LightweaveWindow {
         });
 
         return HStack.Create(children: row => {
-            row.Add(channelPane, 280f);
+            row.Add(channelPane.Build(), 280f);
             row.AddFlex(centerColumn);
             row.Add(detailPane, 360f);
         });

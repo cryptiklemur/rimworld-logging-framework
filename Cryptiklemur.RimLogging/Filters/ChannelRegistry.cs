@@ -8,6 +8,12 @@ namespace Cryptiklemur.RimLogging.Filters
     public static class ChannelRegistry
     {
         /// <summary>
+        /// Returns all <see cref="ChannelDef"/> instances registered with the framework.
+        /// Returns an empty list until Phase 10 populates the registry during Def loading.
+        /// </summary>
+        public static IReadOnlyList<ChannelDef> AllRegisteredDefs => [];
+
+        /// <summary>
         /// Returns the <see cref="ChannelDef"/> registered for <paramref name="channel"/>,
         /// or <c>null</c> when no definition has been registered.
         /// Phase 6 will populate the registry during <c>Verse.Def</c> loading.
