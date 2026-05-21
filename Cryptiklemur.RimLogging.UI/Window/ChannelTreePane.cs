@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Cosmere.Lightweave.Data;
 using Cosmere.Lightweave.Runtime;
 using Cryptiklemur.RimLogging;
-using Cryptiklemur.RimLogging.Filters;
+using Cryptiklemur.RimLogging.Channels;
 using Cryptiklemur.RimLogging.UI;
 
 namespace Cryptiklemur.RimLogging.UI.Window;

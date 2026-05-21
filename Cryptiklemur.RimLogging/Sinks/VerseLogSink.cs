@@ -1,4 +1,4 @@
-using Cryptiklemur.RimLogging.Filters;
+using Cryptiklemur.RimLogging.Channels;
 using Cryptiklemur.RimLogging.Format;
 using Cryptiklemur.RimLogging.Hijack;
 
