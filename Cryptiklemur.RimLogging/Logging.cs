@@ -15,6 +15,12 @@ public static class Logging
 
     public static LogLevel GlobalMinLevel { get; set; } = LogLevel.Trace;
 
+#pragma warning disable CS0649
+    internal static System.Func<bool>? _isDegradedProvider;
+#pragma warning restore CS0649
+
+    public static bool IsPrimary => !(_isDegradedProvider?.Invoke() ?? false);
+
     /// <summary>Emit a log entry, applying the global minimum-level filter.</summary>
     internal static void Emit(LogEntry entry)
     {
