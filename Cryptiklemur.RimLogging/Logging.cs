@@ -59,5 +59,9 @@ public static class Logging
         _queue = null;
     }
 
+    public static void RegisterSink(ILogSink sink) => Sinks.SinkRegistry.Register(sink);
+
+    public static bool RemoveSink(ILogSink sink) => Sinks.SinkRegistry.Remove(sink);
+
     internal static void StopForTests() => Shutdown();
 }
