@@ -176,4 +176,41 @@ public class FilterExpressionRoundTripTests
         FilterExpression fe = FilterExpression.Parse("NOT (channel = \"Unity\")");
         Assert.Equal(expected, fe.Match(MakeEntry(lvl, ch)));
     }
+
+    // Task 6.8 — TryParse error-handling
+
+    // 1. Valid input: returns true, non-null result, null error
+    [Fact]
+    public void TryParse_ValidInput_ReturnsTrueWithResult()
+    {
+        bool ok = FilterExpression.TryParse("level >= Warn", out FilterExpression? fe, out string? err);
+
+        Assert.True(ok);
+        Assert.NotNull(fe);
+        Assert.Null(err);
+    }
+
+    // 2. Truncated input "level >= " — missing level literal
+    [Fact]
+    public void TryParse_TruncatedLevelExpression_ReturnsFalseWithPositionInfo()
+    {
+        bool ok = FilterExpression.TryParse("level >= ", out FilterExpression? fe, out string? err);
+
+        Assert.False(ok);
+        Assert.Null(fe);
+        Assert.NotNull(err);
+        Assert.Contains("9", err);  // End token Pos = input.Length = 9
+    }
+
+    // 3. Empty input — parser throws on the End token
+    [Fact]
+    public void TryParse_EmptyInput_ReturnsFalseWithPositionInfo()
+    {
+        bool ok = FilterExpression.TryParse("", out FilterExpression? fe, out string? err);
+
+        Assert.False(ok);
+        Assert.Null(fe);
+        Assert.NotNull(err);
+        Assert.Contains("0", err);  // End token Pos = 0 for empty input
+    }
 }

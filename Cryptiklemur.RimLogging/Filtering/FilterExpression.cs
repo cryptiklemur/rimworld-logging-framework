@@ -19,6 +19,22 @@ public sealed class FilterExpression
     public static FilterExpression Parse(string input)
         => new FilterExpression(input, Parser.Parse(input));
 
+    public static bool TryParse(string input, out FilterExpression? result, out string? error)
+    {
+        try
+        {
+            result = Parse(input);
+            error = null;
+            return true;
+        }
+        catch (FormatException ex)
+        {
+            result = null;
+            error = ex.Message;
+            return false;
+        }
+    }
+
     public bool Match(LogEntry entry) => _predicate(entry);
 
     public override string ToString() => Stringify(_ast);
