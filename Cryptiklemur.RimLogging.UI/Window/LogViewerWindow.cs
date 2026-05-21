@@ -1,4 +1,6 @@
+using System;
 using Cosmere.Lightweave.Layout;
+using Cryptiklemur.RimLogging.UI.Filter;
 using Cosmere.Lightweave.Runtime;
 using Cosmere.Lightweave.Tokens;
 
@@ -10,6 +12,8 @@ internal sealed class LogViewerWindow : LightweaveWindow {
     private readonly SelectionStore _selection;
     private readonly LogListPane _logListPane;
     private readonly DetailPane _detailPane;
+    private readonly ChipFilterState _filterState;
+    private readonly FilterBar _filterBar;
 
     public LogViewerWindow(UISink sink) {
         _sink = sink;
@@ -17,6 +21,8 @@ internal sealed class LogViewerWindow : LightweaveWindow {
         _selection = new SelectionStore();
         _logListPane = new LogListPane(sink, _channelTreePane, _selection);
         _detailPane = new DetailPane(_selection);
+        _filterState = new ChipFilterState();
+        _filterBar = new FilterBar(_filterState, Array.Empty<string>());
     }
 
     protected override float WidthFraction => 0.85f;
@@ -29,7 +35,7 @@ internal sealed class LogViewerWindow : LightweaveWindow {
 
     protected override LightweaveNode Body() {
         LightweaveNode centerColumn = Column.Create(children: cols => {
-            cols.Add(Box.Create(id: "filter-bar-placeholder"));
+            cols.Add(_filterBar.Build());
             cols.Add(_logListPane.Build());
         });
 
