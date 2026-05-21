@@ -105,13 +105,7 @@ internal sealed class FilterBar
                 // DSL editor (visible only in DSL mode)
                 if (_state.DslMode)
                 {
-                    // Task 8.9 wires this through FilterExpression.TryParse and renders parse errors.
-                    row.AddFlex(TextField.Create(
-                        value: _state.DslSource,
-                        onChange: text => _state.DslSource = text,
-                        placeholder: "Enter filter expression...",
-                        id: "filter-dsl-editor"
-                    ));
+                    row.AddFlex(new DslEditor(_state).Build());
                 }
             }
         );
