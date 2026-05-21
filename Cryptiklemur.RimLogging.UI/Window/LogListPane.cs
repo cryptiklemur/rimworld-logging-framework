@@ -17,12 +17,14 @@ internal sealed class LogListPane
 {
     private readonly UISink _sink;
     private readonly ChannelTreePane _channelTree;
+    private readonly SelectionStore _selection;
     private readonly LightweaveScrollStatus _scrollStatus = new LightweaveScrollStatus();
 
-    public LogListPane(UISink sink, ChannelTreePane channelTree)
+    public LogListPane(UISink sink, ChannelTreePane channelTree, SelectionStore selection)
     {
         _sink = sink;
         _channelTree = channelTree;
+        _selection = selection;
     }
 
     public LightweaveNode Build()
@@ -46,7 +48,7 @@ internal sealed class LogListPane
 
         LightweaveNode rows = Each.Of(
             visible,
-            (LogEntry entry, int _) => BuildRow(entry),
+            (LogEntry entry, int _) => BuildRow(entry, _selection),
             orientation: EachOrientation.Vertical,
             gap: new Rem(0f)
         );
@@ -54,7 +56,7 @@ internal sealed class LogListPane
         return ScrollArea.External(rows, _scrollStatus);
     }
 
-    private static LightweaveNode BuildRow(LogEntry entry)
+    private static LightweaveNode BuildRow(LogEntry entry, SelectionStore selection)
     {
         string timestamp = entry.Timestamp.ToString("HH:mm:ss.fff");
         string levelLabel = entry.Level.ToString().ToUpperInvariant();
@@ -63,7 +65,7 @@ internal sealed class LogListPane
             ? $"{entry.Source.File}:{entry.Source.Line}"
             : string.Empty;
 
-        return HStack.Create(
+        LightweaveNode rowContent = HStack.Create(
             gap: new Rem(0.375f),
             children: row =>
             {
@@ -103,6 +105,14 @@ internal sealed class LogListPane
                     )
                 );
             }
+        );
+
+        return Cosmere.Lightweave.Input.Button.Create(
+            label: string.Empty,
+            onClick: () => { selection.Selected = entry; },
+            variant: default,
+            ghost: true,
+            body: rowContent
         );
     }
 
