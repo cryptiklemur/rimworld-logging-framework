@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <Compile Include="..\Cryptiklemur.RimLogging.UI\**\*.cs"
-                 Exclude="..\Cryptiklemur.RimLogging.UI\bin\**\*.cs;..\Cryptiklemur.RimLogging.UI\obj\**\*.cs;..\Cryptiklemur.RimLogging.UI\Window\**\*.cs;..\Cryptiklemur.RimLogging.UI\Panes\**\*.cs;..\Cryptiklemur.RimLogging.UI\Hijack\**\*.cs;..\Cryptiklemur.RimLogging.UI\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging.UI\ReplaceVanillaLog\**\*.cs"
+                 Exclude="..\Cryptiklemur.RimLogging.UI\bin\**\*.cs;..\Cryptiklemur.RimLogging.UI\obj\**\*.cs;..\Cryptiklemur.RimLogging.UI\Window\**\*.cs;..\Cryptiklemur.RimLogging.UI\Panes\**\*.cs;..\Cryptiklemur.RimLogging.UI\Hijack\**\*.cs;..\Cryptiklemur.RimLogging.UI\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging.UI\ReplaceVanillaLog\**\*.cs;..\Cryptiklemur.RimLogging.UI\BugBundle\**\*.cs"
                  LinkBase="LinkedSource\UI" />
         <Compile Include="..\Cryptiklemur.RimLogging\**\*.cs"
                  Exclude="..\Cryptiklemur.RimLogging\bin\**\*.cs;..\Cryptiklemur.RimLogging\obj\**\*.cs;..\Cryptiklemur.RimLogging\Hijack\**\*.cs;..\Cryptiklemur.RimLogging\Bootstrap\**\*.cs;..\Cryptiklemur.RimLogging\Settings\LogDirectory.cs;..\Cryptiklemur.RimLogging\Settings\LoggingSettings.cs;..\Cryptiklemur.RimLogging\Settings\LoggingSettingsWindow.cs;..\Cryptiklemur.RimLogging\Settings\LoggingMod.cs;..\Cryptiklemur.RimLogging\Sinks\VerseLogSink.cs;..\Cryptiklemur.RimLogging\Sinks\SinkDef.cs;..\Cryptiklemur.RimLogging\Pipeline\ShutdownFlush.cs;..\Cryptiklemur.RimLogging\Bundle\ModListSnapshot.cs;..\Cryptiklemur.RimLogging\Bundle\BundlerSessionFactory.cs"
