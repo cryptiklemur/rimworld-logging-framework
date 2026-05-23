@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
-  <RimLogging.Sinks.SinkDef>
+  <CryptikLemur.RimLogging.Sinks.SinkDef>
     <defName>VerseLog</defName>
     <label>Verse Log</label>
     <description>Forwards entries to RimWorld's built-in Verse.Log.</description>
-    <sinkClass>Cryptiklemur.RimLogging.Sinks.VerseLogSink, Cryptiklemur.RimLogging</sinkClass>
+    <sinkClass>CryptikLemur.RimLogging.Sinks.VerseLogSink, CryptikLemur.RimLogging</sinkClass>
     <minLevel>Info</minLevel>
     <enabledByDefault>true</enabledByDefault>
-  </RimLogging.Sinks.SinkDef>
+  </CryptikLemur.RimLogging.Sinks.SinkDef>
 
-  <RimLogging.Sinks.SinkDef>
+  <CryptikLemur.RimLogging.Sinks.SinkDef>
     <defName>RollingText</defName>
     <label>Rolling Text File</label>
     <description>Appends plain-text log entries to a rolling file in the log directory.</description>
-    <sinkClass>Cryptiklemur.RimLogging.Sinks.RollingTextFileSink, Cryptiklemur.RimLogging</sinkClass>
+    <sinkClass>CryptikLemur.RimLogging.Sinks.RollingTextFileSink, CryptikLemur.RimLogging</sinkClass>
     <minLevel>Info</minLevel>
     <enabledByDefault>true</enabledByDefault>
-  </RimLogging.Sinks.SinkDef>
+  </CryptikLemur.RimLogging.Sinks.SinkDef>
 
-  <RimLogging.Sinks.SinkDef>
+  <CryptikLemur.RimLogging.Sinks.SinkDef>
     <defName>RollingJson</defName>
     <label>Rolling JSON File</label>
     <description>Appends structured NDJSON log entries to a rolling file in the log directory.</description>
-    <sinkClass>Cryptiklemur.RimLogging.Sinks.RollingJsonFileSink, Cryptiklemur.RimLogging</sinkClass>
+    <sinkClass>CryptikLemur.RimLogging.Sinks.RollingJsonFileSink, CryptikLemur.RimLogging</sinkClass>
     <minLevel>Debug</minLevel>
     <enabledByDefault>false</enabledByDefault>
-  </RimLogging.Sinks.SinkDef>
+  </CryptikLemur.RimLogging.Sinks.SinkDef>
 </Defs>

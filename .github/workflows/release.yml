@@ -39,18 +39,17 @@ jobs:
         run: npm install
 
       - name: dotnet restore
-        run: dotnet restore Cryptiklemur.RimLogging.sln
+        run: dotnet restore CryptikLemur.RimLogging.sln
 
       - name: dotnet build
-        run: dotnet build Cryptiklemur.RimLogging.sln -c Release --nologo --no-restore
+        run: dotnet build CryptikLemur.RimLogging.sln -c Release --nologo --no-restore
 
       - name: dotnet test
-        run: dotnet test Cryptiklemur.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"
+        run: dotnet test CryptikLemur.RimLogging.sln -c Release --nologo --no-build --logger "console;verbosity=normal"
 
       - name: dotnet pack
         run: |
-          dotnet pack Cryptiklemur.RimLogging/Cryptiklemur.RimLogging.csproj -c Release --nologo -o out/nupkg
-          dotnet pack Cryptiklemur.RimLogging.UI/Cryptiklemur.RimLogging.UI.csproj -c Release --nologo -o out/nupkg
+          dotnet pack CryptikLemur.RimLogging/CryptikLemur.RimLogging.csproj -c Release --nologo -o out/nupkg
 
       - name: Run semantic-release
         env:

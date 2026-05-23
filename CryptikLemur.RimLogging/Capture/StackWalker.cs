@@ -1,0 +1,108 @@
+using System;
+
+namespace CryptikLemur.RimLogging.Capture;
+
+/// <summary>
+/// Runtime fallback that resolves the originating <see cref="SourceLocation"/> by
+/// walking the managed stack when compile-time caller attributes are unavailable.
+/// </summary>
+public static class StackWalker
+{
+    private static readonly System.Text.RegularExpressions.Regex _pathStrip = new(
+        @"^.*?(RimworldCosmere[\\/]RimworldCosmere[\\/]|RimWorld[\\/]Mods[\\/])+[\\/]*",
+        System.Text.RegularExpressions.RegexOptions.Compiled);
+    private static readonly System.Text.RegularExpressions.Regex _dupDir = new(
+        @"^(\w+)[\\/]\1[\\/]",
+        System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>
+    /// Walks the current stack and returns the first frame outside the
+    /// <c>CryptikLemur.RimLogging.</c> namespace, normalising its file path so the
+    /// resulting <see cref="SourceLocation"/> is stable across machines and layouts.
+    /// </summary>
+    /// <returns>
+    /// A populated <see cref="SourceLocation"/> when a usable frame is found, or
+    /// <see cref="SourceLocation.Empty"/> when no caller frame carries file info.
+    /// </returns>
+    public static SourceLocation WalkOnce()
+    {
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(1, true);
+        return FirstCallerFrame(st);
+    }
+
+    /// <summary>
+    /// Returns the first frame in <paramref name="st"/> that lives outside the
+    /// <c>CryptikLemur.RimLogging.</c> namespace, with a normalised file path.
+    /// </summary>
+    /// <param name="st">A pre-captured stack trace to scan.</param>
+    /// <returns>The resolved <see cref="SourceLocation"/>, or <see cref="SourceLocation.Empty"/>.</returns>
+    public static SourceLocation FirstCallerFrame(System.Diagnostics.StackTrace st)
+    {
+        for (int i = 0; i < st.FrameCount; i++)
+        {
+            System.Diagnostics.StackFrame? frame = st.GetFrame(i);
+            System.Reflection.MethodBase? method = frame?.GetMethod();
+            string? declaring = method?.DeclaringType?.FullName;
+            if (declaring != null && declaring.StartsWith("CryptikLemur.RimLogging.", StringComparison.Ordinal))
+                continue;
+            string? file = frame?.GetFileName();
+            if (file == null) return SourceLocation.Empty;
+            string clean = NormalizePath(file);
+            return new SourceLocation(clean, frame!.GetFileLineNumber(), method?.Name);
+        }
+        return SourceLocation.Empty;
+    }
+
+    /// <summary>
+    /// Formats a <see cref="System.Diagnostics.StackTrace"/> into a multi-line
+    /// string of <c>at Type.Method (file:line)</c> entries for every frame
+    /// outside the <c>CryptikLemur.RimLogging.</c> namespace. Paths are
+    /// normalised the same way <see cref="FirstCallerFrame"/> normalises them.
+    /// </summary>
+    /// <param name="st">A pre-captured stack trace to format.</param>
+    /// <returns>A formatted trace string; empty when no qualifying frames exist.</returns>
+    public static string FormatTrace(System.Diagnostics.StackTrace st)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        for (int i = 0; i < st.FrameCount; i++)
+        {
+            System.Diagnostics.StackFrame? frame = st.GetFrame(i);
+            if (frame == null) continue;
+            System.Reflection.MethodBase? method = frame.GetMethod();
+            string? declaring = method?.DeclaringType?.FullName;
+            if (declaring != null && declaring.StartsWith("CryptikLemur.RimLogging.", StringComparison.Ordinal))
+                continue;
+            string typeName = declaring ?? "<unknown>";
+            string methodName = method?.Name ?? "<unknown>";
+            string? file = frame.GetFileName();
+            int line = frame.GetFileLineNumber();
+            sb.Append("at ").Append(typeName).Append('.').Append(methodName);
+            if (!string.IsNullOrEmpty(file))
+            {
+                sb.Append(" (").Append(NormalizePath(file));
+                if (line > 0) sb.Append(':').Append(line);
+                sb.Append(')');
+            }
+            sb.Append('\n');
+        }
+        if (sb.Length > 0 && sb[sb.Length - 1] == '\n') sb.Length--;
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Normalises an absolute source-file path into a short, stable form by
+    /// stripping common RimWorld layout prefixes, collapsing duplicated sibling
+    /// directories, and removing the trailing <c>.cs</c> extension.
+    /// </summary>
+    /// <param name="file">Raw file path from <c>StackFrame.GetFileName()</c>.</param>
+    /// <returns>Short normalised path, never <c>null</c>.</returns>
+    internal static string NormalizePath(string file)
+    {
+        string clean = _pathStrip.Replace(file, string.Empty);
+        clean = _dupDir.Replace(clean, "$1\\");
+        clean = clean.TrimStart('\\', '/');
+        if (clean.EndsWith(".cs", StringComparison.Ordinal))
+            clean = clean.Substring(0, clean.Length - 3);
+        return clean;
+    }
+}

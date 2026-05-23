@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
     <name>RimLogging</name>
-    <packageId>cryptiklemur.rimlogging</packageId>
+    <packageId>CryptikLemur.RimLogging</packageId>
     <author>CryptikLemur</author>
     <url>https://github.com/cryptiklemur/rimworld-logging-framework</url>
     <supportedVersions>
@@ -20,9 +20,9 @@
     </loadAfter>
     <description>A public logging framework for RimWorld mods.
 
-Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. Features hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, an expression-based filter DSL, and a three-pane in-game log viewer (when Lightweave is installed).
+Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. Features hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and an expression-based filter DSL. A three-pane in-game log viewer is provided by the Lightweave framework when it is installed.
 
-Other mods can depend on this and call Cryptiklemur.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla Verse.Log and UnityEngine.Debug.Log calls are also captured and routed through the framework.
+Other mods can depend on this and call CryptikLemur.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla Verse.Log and UnityEngine.Debug.Log calls are also captured and routed through the framework.
 
 Distributed as both a Steam Workshop dependency mod and a NuGet package. MIT licensed.</description>
 </ModMetaData>
