@@ -6,6 +6,7 @@ export default {
             '@semantic-release/commit-analyzer',
             {
                 releaseRules: [
+                    { scope: 'worker', release: false },
                     { type: 'refactor', release: 'patch' },
                     { type: 'style', release: 'patch' },
                     { type: 'ci', release: 'patch' },
