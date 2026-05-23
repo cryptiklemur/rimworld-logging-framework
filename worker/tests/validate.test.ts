@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { BundlePayload } from '../src/types';
 import { MAX_ENTRIES, MAX_MSG_BYTES, validateBundle } from '../src/validate';
 
-const minimalBundle = () => ({
+const minimalBundle = (): BundlePayload => ({
   rimWorldVersion: '1.5.4297',
   frameworkVersion: '1.0.0-beta.1',
   mods: [],
