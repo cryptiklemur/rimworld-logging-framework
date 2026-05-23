@@ -24,3 +24,10 @@ Thumbs.db
 # docfx generated output
 _site/
 /api/
+
+# bundle worker
+worker/node_modules/
+worker/.wrangler/
+worker/dist/
+worker/.dev.vars
+

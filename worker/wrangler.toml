@@ -1,0 +1,8 @@
+name = "rimlogging-bundle"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "REPLACE_WITH_ACTUAL_KV_ID"
