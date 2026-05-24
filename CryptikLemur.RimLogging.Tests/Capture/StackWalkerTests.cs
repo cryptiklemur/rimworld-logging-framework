@@ -69,4 +69,37 @@ public class StackWalkerTests
 
         Assert.Equal(@"MyMod\View.cshtml", result);
     }
+
+    [Fact]
+    public void FirstCallerFrame_FromHelperInFrameworkNamespace_SkipsHelperAndReturnsTestMethod()
+    {
+        SourceLocation loc = TestStackWalkerHelper.CallFirstCallerFrame();
+
+        Assert.Equal(
+            nameof(FirstCallerFrame_FromHelperInFrameworkNamespace_SkipsHelperAndReturnsTestMethod),
+            loc.Method);
+        Assert.True(loc.IsCallerProvided);
+    }
+
+    // Regression: prior FirstCallerFrame bailed on the first non-RimLogging frame whose
+    // GetFileName() returned null. In production this meant any vanilla Verse/Unity frame
+    // (or the Harmony-emitted dynamic stub) sitting between the framework and the real
+    // caller wiped out the Source field. Reflection.Invoke injects similar PDB-less frames
+    // (System.RuntimeMethodHandle / RuntimeMethodInfo.UnsafeInvokeInternal) into the
+    // stack, so this drives the same scenario: the call chain has frames-without-files
+    // between the framework-internal helper and the real test caller. The fix is for
+    // FirstCallerFrame to walk past those instead of returning Empty.
+    [Fact]
+    public void FirstCallerFrame_SkipsReflectionInvokeFramesWithoutFileInfo_AndReturnsRealCaller()
+    {
+        System.Reflection.MethodInfo m = typeof(TestStackWalkerHelper).GetMethod(
+            nameof(TestStackWalkerHelper.CallFirstCallerFrame))!;
+
+        SourceLocation loc = (SourceLocation)m.Invoke(null, null)!;
+
+        Assert.Equal(
+            nameof(FirstCallerFrame_SkipsReflectionInvokeFramesWithoutFileInfo_AndReturnsRealCaller),
+            loc.Method);
+        Assert.True(loc.IsCallerProvided);
+    }
 }

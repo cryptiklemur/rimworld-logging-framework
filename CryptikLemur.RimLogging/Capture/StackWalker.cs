@@ -42,11 +42,16 @@ public static class StackWalker
         {
             System.Diagnostics.StackFrame? frame = st.GetFrame(i);
             System.Reflection.MethodBase? method = frame?.GetMethod();
-            string? declaring = method?.DeclaringType?.FullName;
-            if (declaring != null && declaring.StartsWith("CryptikLemur.RimLogging.", StringComparison.Ordinal))
-                continue;
+            System.Type? declaringType = method?.DeclaringType;
+            string? declaring = declaringType?.FullName;
+            string? assembly = declaringType?.Assembly.GetName().Name;
+            // Skip framework infrastructure (RimLogging, Harmony stubs, MonoMod, dynamic methods).
+            if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
             string? file = frame?.GetFileName();
-            if (file == null) return SourceLocation.Empty;
+            // Bug fix: vanilla Verse/Unity frames have no PDB, so GetFileName() returns null.
+            // Previously we bailed here, which meant the real user-code frame underneath was
+            // never visited even when its PDB was loaded. Keep walking instead.
+            if (file == null) continue;
             string clean = NormalizePath(file);
             return new SourceLocation(clean, frame!.GetFileLineNumber(), method?.Name);
         }

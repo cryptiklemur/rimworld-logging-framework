@@ -8,4 +8,15 @@ namespace CryptikLemur.RimLogging.Capture;
 internal static class TestStackWalkerHelper
 {
     public static SourceLocation CallWalker() => StackWalker.WalkOnce();
+
+    /// <summary>
+    /// Captures a stack from inside the framework namespace and runs it through
+    /// <see cref="StackWalker.FirstCallerFrame"/> so tests can verify that this
+    /// helper's frame is skipped and the outer test caller is returned.
+    /// </summary>
+    public static SourceLocation CallFirstCallerFrame()
+    {
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
+        return StackWalker.FirstCallerFrame(st);
+    }
 }
