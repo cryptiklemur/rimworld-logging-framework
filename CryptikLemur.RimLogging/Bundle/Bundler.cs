@@ -38,7 +38,7 @@ public static class Bundler
             p.Entries.Add(new BundlePayload.EntryDto
             {
                 Timestamp = e.Timestamp.ToString("o"),
-                Level = e.Level.ToString(),
+                Level = SerializeLevel(e.Level),
                 Channel = e.Channel,
                 Source = e.Source.IsCallerProvided ? $"{e.Source.File}:{e.Source.Line}" : "",
                 Message = RichText.Strip(e.RenderedMessage),
@@ -48,6 +48,22 @@ public static class Bundler
         }
         return p;
     }
+
+    /// <summary>
+    /// Maps a <see cref="LogLevel"/> to the canonical level name accepted by the bundle upload worker.
+    /// The worker's accepted set is <c>Trace, Debug, Info, Warning, Error, Critical</c>, so <c>Warn</c>
+    /// and <c>Fatal</c> must be translated.
+    /// </summary>
+    private static string SerializeLevel(LogLevel level) => level switch
+    {
+        LogLevel.Trace => "Trace",
+        LogLevel.Debug => "Debug",
+        LogLevel.Info  => "Info",
+        LogLevel.Warn  => "Warning",
+        LogLevel.Error => "Error",
+        LogLevel.Fatal => "Critical",
+        _              => level.ToString(),
+    };
 
     private static Dictionary<string, object?>? CopyContext(IReadOnlyDictionary<string, object?>? source)
     {

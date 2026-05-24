@@ -56,6 +56,22 @@ public class BundlerTests
         Assert.Equal("alice", dto.Context!["Name"]);
     }
 
+    [Theory]
+    [InlineData(LogLevel.Trace, "Trace")]
+    [InlineData(LogLevel.Debug, "Debug")]
+    [InlineData(LogLevel.Info,  "Info")]
+    [InlineData(LogLevel.Warn,  "Warning")]
+    [InlineData(LogLevel.Error, "Error")]
+    [InlineData(LogLevel.Fatal, "Critical")]
+    public void Build_LevelString_UsesWorkerCanonicalNames(LogLevel level, string expected)
+    {
+        // Regression: the bundle upload worker rejects "Warn"/"Fatal"; the sender must emit
+        // "Warning"/"Critical" so the canonical set Trace/Debug/Info/Warning/Error/Critical is honored.
+        LogEntry e = MakeEntry(level: level);
+        BundlePayload p = Bundler.Build(new[] { e }, "x", "y", new List<BundlePayload.ModInfo>());
+        Assert.Equal(expected, p.Entries[0].Level);
+    }
+
     [Fact]
     public void Build_NullContext_ProducesNullContext()
     {
