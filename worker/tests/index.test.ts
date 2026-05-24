@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:test';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { handle } from '../src/index';
+import { RATE_LIMIT_PER_WINDOW } from '../src/ratelimit';
 
 function post(body: unknown, opts: { ip?: string; contentType?: string; contentLength?: string } = {}): Request {
   const headers: Record<string, string> = {
@@ -79,7 +80,7 @@ describe('handle', () => {
 
   it('returns 429 after the rate limit', async () => {
     const f = gistOk();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < RATE_LIMIT_PER_WINDOW; i++) {
       const r = await handle(post(validBundle(), { ip: '4.4.4.4' }), env, f);
       expect(r.status).toBe(200);
     }
@@ -94,11 +95,27 @@ describe('handle', () => {
     expect(resp.status).toBe(502);
   });
 
-  it('posts three named files to github', async () => {
+  it('posts three named files to github with a randomized bundle filename', async () => {
     const f = gistOk();
     await handle(post(validBundle(), { ip: '6.6.6.6' }), env, f);
     const init = f.mock.calls[0]![1] as RequestInit;
     const parsed = JSON.parse(init.body as string) as { files: Record<string, unknown> };
-    expect(Object.keys(parsed.files).sort()).toEqual(['bundle.json', 'logs.txt', 'summary.md']);
+    const names = Object.keys(parsed.files).sort();
+    expect(names).toHaveLength(3);
+    expect(names).toContain('logs.txt');
+    expect(names).toContain('summary.md');
+    const bundle = names.find((n) => n !== 'logs.txt' && n !== 'summary.md');
+    expect(bundle).toMatch(/^bundle-[0-9a-f]{8}\.json$/);
+  });
+
+  it('uses a different bundle filename on each call', async () => {
+    const f = gistOk();
+    await handle(post(validBundle(), { ip: '7.7.7.7' }), env, f);
+    await handle(post(validBundle(), { ip: '7.7.7.8' }), env, f);
+    const first = JSON.parse((f.mock.calls[0]![1] as RequestInit).body as string) as { files: Record<string, unknown> };
+    const second = JSON.parse((f.mock.calls[1]![1] as RequestInit).body as string) as { files: Record<string, unknown> };
+    const bundleOf = (files: Record<string, unknown>) =>
+      Object.keys(files).find((n) => n !== 'logs.txt' && n !== 'summary.md')!;
+    expect(bundleOf(first.files)).not.toBe(bundleOf(second.files));
   });
 });

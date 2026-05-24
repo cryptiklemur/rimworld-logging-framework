@@ -47,9 +47,10 @@ export async function handle(req: Request, env: Env, fetchImpl: FetchLike = fetc
   if (!v.ok) return json({ error: 'validation failed', details: v.errors }, 400);
 
   const description = `RimLogging bundle - RW ${v.bundle.rimWorldVersion || '?'} - ${v.bundle.entries.length} entries - ${new Date().toISOString()}`;
+  const bundleFile = `bundle-${crypto.randomUUID().slice(0, 8)}.json`;
   const files = {
     'summary.md': { content: renderSummary(v.bundle) },
-    'bundle.json': { content: JSON.stringify(v.bundle, null, 2) },
+    [bundleFile]: { content: JSON.stringify(v.bundle, null, 2) },
     'logs.txt': { content: renderLogs(v.bundle) },
   };
 
