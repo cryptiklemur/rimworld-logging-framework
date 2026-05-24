@@ -1,5 +1,5 @@
-export const RATE_LIMIT_PER_WINDOW = 10;
-export const RATE_WINDOW_SECONDS = 3600;
+export const RATE_LIMIT_PER_WINDOW = 2;
+export const RATE_WINDOW_SECONDS = 60;
 
 export type RateLimitResult =
   | { allowed: true }
