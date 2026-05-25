@@ -444,12 +444,30 @@ public static class Log
         mod = null;
         if (line > 0 && !string.IsNullOrEmpty(file))
         {
-            (string shortPath, string? resolvedMod) = ModResolution.ResolveFromPath(file, ModNameCache.Map());
+            // [CallerFilePath] / [CallerLineNumber] supplied the raw compile-time path with no
+            // Type info. Find the caller's Type cheaply (reuse the existing walk when we already
+            // have one for the formatted trace; otherwise build a no-PDB walk just for this) so
+            // assembly-anchored normalisation has the asm + mod folder it needs.
+            System.Type? callerType = ResolveCallerType(walk);
+            if (callerType != null)
+            {
+                string shortPath = StackWalker.NormalizePath(file, callerType);
+                mod = ModNameCache.ForAssembly(callerType.Assembly);
+                return new SourceLocation(shortPath, line, null);
+            }
+            (string fallbackPath, string? resolvedMod) = ModResolution.ResolveFromPath(file, ModNameCache.Map());
             mod = resolvedMod;
-            return new SourceLocation(shortPath, line, null);
+            return new SourceLocation(fallbackPath, line, null);
         }
         if (explicitSource.IsCallerProvided) return explicitSource;
         return walk != null ? StackWalker.FirstCallerFrame(walk) : StackWalker.WalkOnce();
+    }
+
+    private static System.Type? ResolveCallerType(System.Diagnostics.StackTrace? walk)
+    {
+        if (walk != null) return StackWalker.FirstCallerType(walk);
+        System.Diagnostics.StackTrace cheap = new System.Diagnostics.StackTrace(1, false);
+        return StackWalker.FirstCallerType(cheap);
     }
 
     /// <summary>

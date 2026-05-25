@@ -23,4 +23,35 @@ internal static class ModNameMapProvider
         }
         return map;
     }
+
+    /// <summary>
+    /// Builds the asm-name to mod-folder-name map. The folder name is parsed from
+    /// <see cref="Verse.ModContentPack.RootDir"/>, which is stable across loads and matches
+    /// the directory the user actually sees under <c>/Mods/</c> -- preferable to the mod's
+    /// human-display <c>Name</c> when normalising source-file paths.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, string> BuildFolders()
+    {
+        Dictionary<string, string> map = new Dictionary<string, string>();
+        foreach (Verse.ModContentPack mcp in Verse.LoadedModManager.RunningMods)
+        {
+            string? folder = ParseFolder(mcp.RootDir);
+            if (folder == null) continue;
+            foreach (Assembly asm in mcp.assemblies.loadedAssemblies)
+            {
+                string? name = asm.GetName().Name;
+                if (name != null) map[name] = folder;
+            }
+        }
+        return map;
+    }
+
+    private static string? ParseFolder(string? rootDir)
+    {
+        if (string.IsNullOrEmpty(rootDir)) return null;
+        string trimmed = rootDir!.TrimEnd('/', '\\');
+        if (trimmed.Length == 0) return null;
+        int lastSep = trimmed.LastIndexOfAny(new[] { '/', '\\' });
+        return lastSep < 0 ? trimmed : trimmed.Substring(lastSep + 1);
+    }
 }

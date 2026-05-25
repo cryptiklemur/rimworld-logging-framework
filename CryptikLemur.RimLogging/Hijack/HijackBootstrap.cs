@@ -17,6 +17,7 @@ internal static class HijackBootstrap
         AssemblyChannelCache.OnResolverError = (asm, ex) =>
             Verse.Log.Warning($"[RimLogging] channel resolver failed for '{asm.GetName().Name}': {ex.GetType().Name}: {ex.Message}");
         ModNameCache.Provider = ModNameMapProvider.Build;
+        ModNameCache.FolderProvider = ModNameMapProvider.BuildFolders;
         Sinks.VerseLogSink.VanillaWriter = VanillaBufferWriteback.Write;
         VerseLogBackfill.Drain();
         _harmony = new HarmonyLib.Harmony("CryptikLemur.RimLogging");

@@ -15,12 +15,20 @@ internal static class ModNameCache
     private static readonly IReadOnlyDictionary<string, string> Empty = new Dictionary<string, string>();
 
     /// <summary>
-    /// Provider hook. Bootstrap sets the Verse-aware implementation; tests set it directly.
-    /// When <c>null</c>, the cache yields an empty map.
+    /// Provider hook for the asm-name to mod-display-name map. Bootstrap sets the Verse-aware
+    /// implementation; tests set it directly. When <c>null</c>, the cache yields an empty map.
     /// </summary>
     internal static Func<IReadOnlyDictionary<string, string>>? Provider;
 
+    /// <summary>
+    /// Provider hook for the asm-name to mod-folder-name map (the directory name under <c>/Mods/</c>).
+    /// Folder name is preferred over the mod display name when rendering normalised source paths
+    /// because it is stable and matches what shows up in the file system.
+    /// </summary>
+    internal static Func<IReadOnlyDictionary<string, string>>? FolderProvider;
+
     private static IReadOnlyDictionary<string, string>? _cached;
+    private static IReadOnlyDictionary<string, string>? _cachedFolders;
 
     /// <summary>
     /// Returns the assembly-name to mod-name map, building it via <see cref="Provider"/> and
@@ -38,6 +46,21 @@ internal static class ModNameCache
         return map;
     }
 
+    /// <summary>
+    /// Returns the assembly-name to mod-folder-name map. Same caching semantics as
+    /// <see cref="Map"/>: the first non-empty result is cached; empty results are retried.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, string> FolderMap()
+    {
+        if (_cachedFolders != null) return _cachedFolders;
+        if (FolderProvider == null) return Empty;
+        IReadOnlyDictionary<string, string> map;
+        try { map = FolderProvider() ?? Empty; }
+        catch { return Empty; }
+        if (map.Count > 0) _cachedFolders = map;
+        return map;
+    }
+
     /// <summary>Returns the mod name for the given assembly, or <c>null</c> when unknown.</summary>
     internal static string? ForAssembly(Assembly asm)
     {
@@ -46,9 +69,22 @@ internal static class ModNameCache
         return Map().TryGetValue(name, out string? mod) ? mod : null;
     }
 
+    /// <summary>
+    /// Returns the mod folder name (directory under <c>/Mods/</c>) for the given assembly,
+    /// or <c>null</c> when unknown.
+    /// </summary>
+    internal static string? FolderForAssembly(Assembly asm)
+    {
+        string? name = asm.GetName().Name;
+        if (name == null) return null;
+        return FolderMap().TryGetValue(name, out string? folder) ? folder : null;
+    }
+
     internal static void ClearForTests()
     {
         _cached = null;
+        _cachedFolders = null;
         Provider = null;
+        FolderProvider = null;
     }
 }

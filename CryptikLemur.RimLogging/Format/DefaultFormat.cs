@@ -25,7 +25,13 @@ public static class DefaultFormat
                 int close = template.IndexOf('}', i + 1);
                 if (close < 0) { sb.Append(template, i, template.Length - i); break; }
                 string token = template.Substring(i + 1, close - i - 1);
-                sb.Append(ResolveToken(token, entry, stripRichText));
+                string resolved = ResolveToken(token, entry, stripRichText);
+                if (resolved.Length == 0 && TryConsumeEmptyBracketGroup(template, i, close, sb, out int advance))
+                {
+                    i = advance;
+                    continue;
+                }
+                sb.Append(resolved);
                 i = close + 1;
                 continue;
             }
@@ -33,6 +39,25 @@ public static class DefaultFormat
             i++;
         }
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// When a token resolves to the empty string AND it is wrapped in <c>[ ... ]</c> in the
+    /// template (the standard "decorative" wrapping for optional fields), eat the surrounding
+    /// brackets and any single trailing space so the output stays clean instead of leaving a
+    /// stray <c>[]</c> or <c>?:0</c> behind.
+    /// </summary>
+    private static bool TryConsumeEmptyBracketGroup(string template, int openBrace, int closeBrace, System.Text.StringBuilder sb, out int advance)
+    {
+        advance = 0;
+        if (openBrace == 0 || closeBrace + 1 >= template.Length) return false;
+        if (template[openBrace - 1] != '[' || template[closeBrace + 1] != ']') return false;
+        if (sb.Length == 0 || sb[sb.Length - 1] != '[') return false;
+        sb.Length -= 1;
+        int next = closeBrace + 2;
+        if (next < template.Length && template[next] == ' ') next += 1;
+        advance = next;
+        return true;
     }
 
     /// <summary>
@@ -84,7 +109,7 @@ public static class DefaultFormat
             case "level":   return e.Level.ToString().ToUpperInvariant();
             case "channel": return e.Channel;
             case "mod":     return e.Mod ?? string.Empty;
-            case "source":  return e.Source.IsCallerProvided ? e.Source.File + ":" + e.Source.Line : "?:0";
+            case "source":  return e.Source.IsCallerProvided ? e.Source.File + ":" + e.Source.Line : string.Empty;
             case "message": return strip ? RichText.Strip(e.RenderedMessage) : e.RenderedMessage;
             case "ctx":     return RenderUnconsumedContext(e);
             case "exc":     return e.Exception != null ? "\n" + e.Exception.ToString() : string.Empty;

@@ -19,4 +19,15 @@ internal static class TestStackWalkerHelper
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, true);
         return StackWalker.FirstCallerFrame(st);
     }
+
+
+    /// <summary>
+    /// Cheap counterpart of <see cref="CallFirstCallerFrame"/> that exercises the
+    /// no-PDB walk used by <c>Log.ResolveSource</c> for <c>[CallerFilePath]</c> paths.
+    /// </summary>
+    public static System.Type? CallFirstCallerType()
+    {
+        System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, false);
+        return StackWalker.FirstCallerType(st);
+    }
 }
