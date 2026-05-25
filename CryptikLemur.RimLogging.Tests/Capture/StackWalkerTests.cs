@@ -287,4 +287,18 @@ public class StackWalkerTests
 
         Assert.Equal(typeof(StackWalkerTests), t);
     }
+
+
+    [Fact]
+    public void FormatTrace_SkipsRimLoggingFrames_AndReturnsOuterCaller()
+    {
+        // Regression: FormatTrace and FirstCallerFrame now share CallerFrameClassifier.IsInternalFrame.
+        // The trace must omit CryptikLemur.RimLogging.* frames and include the test method.
+        System.Diagnostics.StackTrace st = TestStackWalkerHelper.CallStackTrace();
+
+        string formatted = CryptikLemur.RimLogging.Capture.StackWalker.FormatTrace(st);
+
+        Assert.DoesNotContain("CryptikLemur.RimLogging.", formatted);
+        Assert.Contains(nameof(FormatTrace_SkipsRimLoggingFrames_AndReturnsOuterCaller), formatted);
+    }
 }

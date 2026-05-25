@@ -124,8 +124,8 @@ public static class StackWalker
             System.Reflection.MethodBase? method = frame.GetMethod();
             System.Type? declaringType = method?.DeclaringType;
             string? declaring = declaringType?.FullName;
-            if (declaring != null && declaring.StartsWith("CryptikLemur.RimLogging.", StringComparison.Ordinal))
-                continue;
+            string? assembly = declaringType?.Assembly.GetName().Name;
+            if (CallerFrameClassifier.IsInternalFrame(declaring, assembly)) continue;
             string typeName = declaring ?? "<unknown>";
             string methodName = method?.Name ?? "<unknown>";
             string? file = frame.GetFileName();

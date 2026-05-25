@@ -30,4 +30,12 @@ internal static class TestStackWalkerHelper
         System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(0, false);
         return StackWalker.FirstCallerType(st);
     }
+
+    /// <summary>
+    /// Returns a stack trace captured from inside the framework namespace so callers
+    /// can feed it to <see cref="StackWalker.FormatTrace"/> and verify framework frames
+    /// are stripped.
+    /// </summary>
+    public static System.Diagnostics.StackTrace CallStackTrace()
+        => new System.Diagnostics.StackTrace(0, true);
 }

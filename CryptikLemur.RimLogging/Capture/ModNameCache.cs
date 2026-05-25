@@ -27,6 +27,15 @@ internal static class ModNameCache
     /// </summary>
     internal static Func<IReadOnlyDictionary<string, string>>? FolderProvider;
 
+    /// <summary>
+    /// Diagnostic hook invoked when <see cref="Provider"/> or <see cref="FolderProvider"/> throws.
+    /// Bootstrap wires this to Verse.Log.Warning so a broken provider surfaces a message instead
+    /// of silently degrading to an empty map. Verse-free so the cache stays unit-testable. Mirrors
+    /// <see cref="AssemblyChannelCache.OnResolverError"/> so both static resolver caches surface
+    /// failures the same way.
+    /// </summary>
+    internal static Action<Exception>? OnProviderError { get; set; }
+
     private static IReadOnlyDictionary<string, string>? _cached;
     private static IReadOnlyDictionary<string, string>? _cachedFolders;
 
@@ -41,7 +50,11 @@ internal static class ModNameCache
         if (Provider == null) return Empty;
         IReadOnlyDictionary<string, string> map;
         try { map = Provider() ?? Empty; }
-        catch { return Empty; }
+        catch (Exception ex)
+        {
+            OnProviderError?.Invoke(ex);
+            return Empty;
+        }
         if (map.Count > 0) _cached = map;
         return map;
     }
@@ -56,7 +69,11 @@ internal static class ModNameCache
         if (FolderProvider == null) return Empty;
         IReadOnlyDictionary<string, string> map;
         try { map = FolderProvider() ?? Empty; }
-        catch { return Empty; }
+        catch (Exception ex)
+        {
+            OnProviderError?.Invoke(ex);
+            return Empty;
+        }
         if (map.Count > 0) _cachedFolders = map;
         return map;
     }
@@ -86,5 +103,6 @@ internal static class ModNameCache
         _cachedFolders = null;
         Provider = null;
         FolderProvider = null;
+        OnProviderError = null;
     }
 }

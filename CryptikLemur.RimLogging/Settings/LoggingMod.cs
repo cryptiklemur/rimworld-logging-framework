@@ -23,8 +23,6 @@ public sealed class LoggingMod : Mod
         Bootstrap.EarlyInit.Run(Settings);
     }
 
-    
-
     /// <summary>Renders the settings window contents and re-applies the global minimum level from the edited settings.</summary>
     /// <param name="inRect">The rect to draw the settings UI within.</param>
     public override void DoSettingsWindowContents(Rect inRect)

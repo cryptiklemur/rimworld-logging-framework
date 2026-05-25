@@ -56,4 +56,39 @@ public class ModNameCacheTests : IDisposable
 
         Assert.Empty(ModNameCache.Map());
     }
+
+    [Fact]
+    public void Map_ThrowingProvider_InvokesOnProviderError()
+    {
+        Exception? captured = null;
+        ModNameCache.OnProviderError = ex => captured = ex;
+        InvalidOperationException expected = new("boom");
+        ModNameCache.Provider = () => throw expected;
+
+        ModNameCache.Map();
+
+        Assert.Same(expected, captured);
+    }
+
+    [Fact]
+    public void FolderMap_ThrowingProvider_InvokesOnProviderError()
+    {
+        Exception? captured = null;
+        ModNameCache.OnProviderError = ex => captured = ex;
+        InvalidOperationException expected = new("folder-boom");
+        ModNameCache.FolderProvider = () => throw expected;
+
+        ModNameCache.FolderMap();
+
+        Assert.Same(expected, captured);
+    }
+
+    [Fact]
+    public void Map_ThrowingProvider_DoesNotThrowWhenHookUnset()
+    {
+        ModNameCache.OnProviderError = null;
+        ModNameCache.Provider = () => throw new InvalidOperationException("boom");
+
+        Assert.Empty(ModNameCache.Map());
+    }
 }

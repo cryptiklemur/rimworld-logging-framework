@@ -43,11 +43,11 @@ public static class LoggingSettingsWindow
         l.Gap();
         if (l.ButtonText("CRL_Settings_Reset".Translate()))
         {
-            s.globalMinLevel = LogLevel.Info;
+            s.globalMinLevel = LoggingSettingsDefaults.GlobalMinLevel;
             s.logDirectory = LogDirectory.Default;
-            s.retentionCount = 5;
-            s.proxyUrl = "https://rimlogging-bundle.cryptiklemur.workers.dev/v1/bundle";
-            s.captureStackTraces = true;
+            s.retentionCount = LoggingSettingsDefaults.RetentionCount;
+            s.proxyUrl = LoggingSettingsDefaults.ProxyUrl;
+            s.captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
         }
 
         l.End();

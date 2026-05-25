@@ -8,16 +8,16 @@ namespace CryptikLemur.RimLogging.Settings;
 public sealed class LoggingSettings : ModSettings
 {
     /// <summary>Global minimum log level; entries below this are dropped.</summary>
-    public LogLevel globalMinLevel = LogLevel.Info;
+    public LogLevel globalMinLevel = LoggingSettingsDefaults.GlobalMinLevel;
 
     /// <summary>Directory where log files are written; empty until normalized to the default.</summary>
     public string logDirectory = "";
 
     /// <summary>Number of rotated log files to retain.</summary>
-    public int retentionCount = 5;
+    public int retentionCount = LoggingSettingsDefaults.RetentionCount;
 
     /// <summary>Endpoint URL used when uploading bug-report bundles.</summary>
-    public string proxyUrl = "https://rimlogging-bundle.cryptiklemur.workers.dev/v1/bundle";
+    public string proxyUrl = LoggingSettingsDefaults.ProxyUrl;
 
     /// <summary>Display names of saved filter presets, parallel to <see cref="filterPresetExpressions"/>.</summary>
     public List<string> filterPresetNames = new();
@@ -26,16 +26,16 @@ public sealed class LoggingSettings : ModSettings
     public List<string> filterPresetExpressions = new();
 
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
-    public bool captureStackTraces = true;
+    public bool captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
 
     /// <summary>Serializes and deserializes the settings via RimWorld's Scribe system, applying defaults on post-load.</summary>
     public override void ExposeData()
     {
-        Scribe_Values.Look(ref globalMinLevel, "globalMinLevel", LogLevel.Info);
+        Scribe_Values.Look(ref globalMinLevel, "globalMinLevel", LoggingSettingsDefaults.GlobalMinLevel);
         Scribe_Values.Look(ref logDirectory, "logDirectory", "");
-        Scribe_Values.Look(ref retentionCount, "retentionCount", 5);
-        Scribe_Values.Look(ref proxyUrl, "proxyUrl", "https://rimlogging-bundle.cryptiklemur.workers.dev/v1/bundle");
-        Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", true);
+        Scribe_Values.Look(ref retentionCount, "retentionCount", LoggingSettingsDefaults.RetentionCount);
+        Scribe_Values.Look(ref proxyUrl, "proxyUrl", LoggingSettingsDefaults.ProxyUrl);
+        Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
         Scribe_Collections.Look(ref filterPresetExpressions, "filterPresetExpressions", LookMode.Value);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)

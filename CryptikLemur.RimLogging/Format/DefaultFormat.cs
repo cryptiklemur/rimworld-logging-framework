@@ -16,28 +16,20 @@ public static class DefaultFormat
     public static string Render(string template, LogEntry entry, bool stripRichText)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder(template.Length + entry.RenderedMessage.Length + 64);
-        int i = 0;
-        while (i < template.Length)
+        int cursor = 0;
+        foreach ((int open, int close, string token) in ScanTokens(template))
         {
-            char c = template[i];
-            if (c == '{')
+            if (open > cursor) sb.Append(template, cursor, open - cursor);
+            string resolved = ResolveToken(token, entry, stripRichText);
+            if (resolved.Length == 0 && TryConsumeEmptyBracketGroup(template, open, close, sb, out int advance))
             {
-                int close = template.IndexOf('}', i + 1);
-                if (close < 0) { sb.Append(template, i, template.Length - i); break; }
-                string token = template.Substring(i + 1, close - i - 1);
-                string resolved = ResolveToken(token, entry, stripRichText);
-                if (resolved.Length == 0 && TryConsumeEmptyBracketGroup(template, i, close, sb, out int advance))
-                {
-                    i = advance;
-                    continue;
-                }
-                sb.Append(resolved);
-                i = close + 1;
+                cursor = advance;
                 continue;
             }
-            sb.Append(c);
-            i++;
+            sb.Append(resolved);
+            cursor = close + 1;
         }
+        if (cursor < template.Length) sb.Append(template, cursor, template.Length - cursor);
         return sb.ToString();
     }
 
@@ -85,20 +77,30 @@ public static class DefaultFormat
     /// </summary>
     private static int IndexOfToken(string template, string token)
     {
+        foreach ((int open, _, string t) in ScanTokens(template))
+            if (t == token) return open;
+        return -1;
+    }
+
+    /// <summary>
+    /// Single-pass enumerator over <c>{token}</c> placeholders in the template. Yields the open-brace
+    /// index, close-brace index, and the token text for every well-formed bracket group, in order.
+    /// Stops cleanly at the first unclosed <c>{</c> so callers can flush the remaining literal tail
+    /// without special-casing. <see cref="Render"/> and <see cref="IndexOfToken"/> share this scanner
+    /// so their tokenisation can never drift out of sync.
+    /// </summary>
+    private static IEnumerable<(int OpenIndex, int CloseIndex, string Token)> ScanTokens(string template)
+    {
         int i = 0;
         while (i < template.Length)
         {
-            if (template[i] == '{')
-            {
-                int close = template.IndexOf('}', i + 1);
-                if (close < 0) return -1;
-                if (template.Substring(i + 1, close - i - 1) == token) return i;
-                i = close + 1;
-                continue;
-            }
-            i++;
+            int open = template.IndexOf('{', i);
+            if (open < 0) yield break;
+            int close = template.IndexOf('}', open + 1);
+            if (close < 0) yield break;
+            yield return (open, close, template.Substring(open + 1, close - open - 1));
+            i = close + 1;
         }
-        return -1;
     }
 
     private static string ResolveToken(string token, LogEntry e, bool strip)

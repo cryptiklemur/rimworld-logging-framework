@@ -18,6 +18,8 @@ internal static class HijackBootstrap
             Verse.Log.Warning($"[RimLogging] channel resolver failed for '{asm.GetName().Name}': {ex.GetType().Name}: {ex.Message}");
         ModNameCache.Provider = ModNameMapProvider.Build;
         ModNameCache.FolderProvider = ModNameMapProvider.BuildFolders;
+        ModNameCache.OnProviderError = ex =>
+            Verse.Log.Warning($"[RimLogging] mod-name provider failed: {ex.GetType().Name}: {ex.Message}");
         Sinks.VerseLogSink.VanillaWriter = VanillaBufferWriteback.Write;
         VerseLogBackfill.Drain();
         _harmony = new HarmonyLib.Harmony("CryptikLemur.RimLogging");
@@ -32,6 +34,8 @@ internal static class HijackBootstrap
         UnityLogBridge.Uninstall();
         _harmony?.UnpatchAll("CryptikLemur.RimLogging");
         Sinks.VerseLogSink.VanillaWriter = null;
+        AssemblyChannelCache.OnResolverError = null;
+        ModNameCache.OnProviderError = null;
         _installed = false;
     }
 }
