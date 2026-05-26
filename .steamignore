@@ -14,6 +14,11 @@ CryptikLemur.RimLogging.LightweaveViewer/
 bin/
 obj/
 node_modules/
+nupkgs/
+out/
+
+worker/
+scorecard.png
 
 Makefile
 make.ps1
