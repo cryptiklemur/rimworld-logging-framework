@@ -20,9 +20,11 @@
     </loadAfter>
     <description>A public logging framework for RimWorld mods.
 
-Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. Features hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and an expression-based filter DSL. A three-pane in-game log viewer is provided by the Lightweave framework when it is installed.
+Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. Features hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and an expression-based filter DSL.
 
 Other mods can depend on this and call CryptikLemur.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla Verse.Log and UnityEngine.Debug.Log calls are also captured and routed through the framework.
+
+A three-pane in-game log viewer ships with this mod and activates when the Lightweave UI framework (Cosmere.Lightweave) is also installed. RimLogging works fully on its own; install Lightweave alongside it to get the viewer. Get Lightweave at https://github.com/RimworldCosmere/Lightweave
 
 Distributed as both a Steam Workshop dependency mod and a NuGet package. MIT licensed.</description>
 </ModMetaData>

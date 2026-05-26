@@ -14,7 +14,7 @@ Replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with a single structure
 - Six levels: `Trace`, `Debug`, `Info`, `Warn`, `Error`, `Fatal`.
 - Multi-sink output: Verse log writeback, rolling text file, rolling NDJSON file, in-memory (tests), plus a plugin sink API.
 - Expression-based filter DSL for the in-game viewer (`level >= Warn OR channel = "Cosmere.*"`).
-- Three-pane in-game log viewer (when Lightweave is installed).
+- Three-pane in-game log viewer, shipped with this mod and activated when [Lightweave](https://github.com/RimworldCosmere/Lightweave) is installed.
 - Lock-free MPSC queue + background drain. Synchronous bypass for `Error` / `Fatal`.
 
 ## Modules
@@ -22,8 +22,9 @@ Replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with a single structure
 | Assembly | Depends on | Purpose |
 |---|---|---|
 | `CryptikLemur.RimLogging` | Harmony, RimWorld 1.6 | Core pipeline, sinks, channels, DSL parser, Verse.Log + Unity hijack. |
+| `CryptikLemur.RimLogging.LightweaveViewer` | Core, [Lightweave](https://github.com/RimworldCosmere/Lightweave) | The three-pane in-game log viewer. Ships in this mod under `LightweaveViewer/` but is only loaded when Lightweave is active. |
 
-The three-pane in-game log viewer lives in the separate [Lightweave](https://github.com/RimworldCosmere/Lightweave) mod, which consumes this framework's `Filtering` and `Bundle` public surface. It is not part of this repository.
+The three-pane in-game log viewer ships with this mod as a companion assembly built on the [Lightweave](https://github.com/RimworldCosmere/Lightweave) UI framework. Because the viewer references Lightweave types, it is loaded late (after all mods are present) and only when `Cosmere.Lightweave` is active — so RimLogging works fine on its own, and the viewer lights up automatically once you also install Lightweave.
 
 ## Install
 
@@ -52,14 +53,9 @@ dotnet add package CryptikLemur.RimLogging
 
 The dll (and its `System.Text.Json` runtime dependencies) are copied into your mod's `Assemblies/` directory at build time. No Workshop dependency required.
 
-## Multi-NuGet-bundle behavior
+### Recommended: also install Lightweave for the in-game viewer
 
-Static state (channel registry, sink list, MPSC queue, Harmony patches) is per-assembly. If multiple mods each NuGet-bundle their own copy of `CryptikLemur.RimLogging`, only the first-loaded copy wins the `Verse.Log` patch race; later copies detect that another instance already owns the patch and put themselves into **degraded mode**:
-
-- `Logging.IsPrimary` returns `false` on the non-owning copies.
-- A copy in degraded mode still serves its own callers but defers the global `Verse.Log` / Unity hijack to the primary.
-
-If you expect several consumer mods, prefer the Workshop dependency so all of them share one assembly and one pipeline.
+The three-pane in-game log viewer is built on the [Lightweave](https://github.com/RimworldCosmere/Lightweave) UI framework. RimLogging ships the viewer but only activates it when Lightweave is present, so install Lightweave alongside RimLogging to get the viewer. Without it, logging still works fully — you just use the vanilla log window instead of the three-pane viewer.
 
 ## Quick start
 
@@ -201,6 +197,7 @@ The in-game mod settings page exposes:
 - **Log directory** (`logDirectory`) - where rolling files are written; normalized to a default under the game's persistent data path when left blank.
 - **Retention count** (`retentionCount`) - number of rotated log files kept.
 - **Bundle proxy URL** (`proxyUrl`) - upload endpoint for bug-report bundles.
+- **Combine message and stack trace** (`logViewerCombinedDetail`) - when Lightweave's viewer is active, shows the message and stack trace together in the detail pane.
 - **Filter presets** - saved name/expression pairs for the viewer's filter DSL.
 
 All settings persist across restarts via RimWorld's Scribe system.

@@ -44,6 +44,9 @@ public static class LoggingSettingsWindow
         l.CheckboxLabeled("CRL_Settings_CaptureStackTraces".Translate(), ref s.captureStackTraces);
 
         l.Gap();
+        l.CheckboxLabeled("CRL_Settings_LogViewerCombinedDetail".Translate(), ref s.logViewerCombinedDetail);
+
+        l.Gap();
         l.Label("CRL_Settings_GitHubToken".Translate());
         s.githubToken = l.TextEntry(s.githubToken);
         l.Label("CRL_Settings_GitHubToken_Note".Translate());
@@ -63,6 +66,7 @@ public static class LoggingSettingsWindow
             s.proxyUrl = LoggingSettingsDefaults.ProxyUrl;
             s.captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
             s.githubToken = LoggingSettingsDefaults.GitHubToken;
+            s.logViewerCombinedDetail = false;
         }
 
         l.End();
