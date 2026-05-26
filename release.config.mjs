@@ -43,7 +43,7 @@ const plugins = [
         '@semantic-release/exec',
         {
             prepareCmd:
-                "dotnet pack CryptikLemur.RimLogging/CryptikLemur.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs --include-symbols -p:SymbolPackageFormat=snupkg",
+                "dotnet pack CryptikLemur.RimLogging/CryptikLemur.RimLogging.csproj -c Release -p:Version=${nextRelease.version} -p:PackageVersion=${nextRelease.version} -p:FileVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:AssemblyVersion=${nextRelease.version.replace(/-.*/, '')}.0 -p:InformationalVersion=${nextRelease.version} -o ./nupkgs",
             publishCmd:
                 "dotnet nuget push './nupkgs/*.nupkg' --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate",
         },
@@ -51,7 +51,7 @@ const plugins = [
     [
         '@semantic-release/github',
         {
-            assets: [{ path: './nupkgs/*.nupkg' }, { path: './nupkgs/*.snupkg' }],
+            assets: [{ path: './nupkgs/*.nupkg' }],
         },
     ],
     [
