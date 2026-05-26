@@ -40,6 +40,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          "${{ runner.temp }}/scanner/dotnet-sonarscanner" begin /k:"cryptiklemur_rimworld-observability-collector" /o:"cryptiklemur" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          "${{ runner.temp }}/scanner/dotnet-sonarscanner" begin /k:"cryptiklemur_rimworld-logging-framework" /o:"cryptiklemur" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
           dotnet build
           "${{ runner.temp }}/scanner/dotnet-sonarscanner" end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
