@@ -9,6 +9,7 @@
 
 CryptikLemur.RimLogging/
 CryptikLemur.RimLogging.Tests/
+CryptikLemur.RimLogging.LightweaveViewer/
 
 bin/
 obj/
