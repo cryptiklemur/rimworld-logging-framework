@@ -5,6 +5,7 @@
     <CRL_Settings_Retention>Fichiers journaux conservés</CRL_Settings_Retention>
     <CRL_Settings_ProxyUrl>URL du proxy de téléversement des lots</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Capturer la pile d'appels pour chaque entrée</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_LogViewerCombinedDetail>Combiner le message et la pile d'appels dans la visionneuse de journaux</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>Jeton d'accès personnel GitHub (facultatif)</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>Stocké en clair dans les paramètres de ce mod. Nécessite uniquement la portée « gist ». Lorsqu'il est défini, les lots téléversés sont créés sous votre compte GitHub.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Téléverser le lot de journaux</CRL_Settings_UploadBundle>

@@ -5,6 +5,7 @@
     <CRL_Settings_Retention>Aufbewahrte Protokolldateien</CRL_Settings_Retention>
     <CRL_Settings_ProxyUrl>Proxy-URL für Paket-Upload</CRL_Settings_ProxyUrl>
     <CRL_Settings_CaptureStackTraces>Stacktrace für jeden Eintrag erfassen</CRL_Settings_CaptureStackTraces>
+    <CRL_Settings_LogViewerCombinedDetail>Nachricht und Stacktrace im Protokoll-Viewer zusammenführen</CRL_Settings_LogViewerCombinedDetail>
     <CRL_Settings_GitHubToken>GitHub-Personal-Access-Token (optional)</CRL_Settings_GitHubToken>
     <CRL_Settings_GitHubToken_Note>Wird im Klartext in den Einstellungen dieses Mods gespeichert. Benötigt nur den „gist“-Bereich. Wenn gesetzt, werden hochgeladene Pakete unter deinem GitHub-Konto erstellt.</CRL_Settings_GitHubToken_Note>
     <CRL_Settings_UploadBundle>Protokollpaket hochladen</CRL_Settings_UploadBundle>
