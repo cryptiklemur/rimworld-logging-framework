@@ -2,8 +2,6 @@
 
 A public, structured logging framework for RimWorld 1.6+ mods.
 
-> Status: pre-1.0. APIs are still settling. The first public release will be `1.0.0-beta` cut from the `beta` branch.
-
 ## What it is
 
 Replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with a single structured pipeline:
@@ -220,7 +218,7 @@ Versions are derived automatically from [Conventional Commits](https://www.conve
 - `feat:` -> minor
 - `BREAKING CHANGE:` / `!` -> major
 
-Releases are git tags. The first public release is `1.0.0-beta` on the `beta` branch; once it stabilizes, `beta` fast-forwards to `main` for `1.0.0`.
+Releases are git tags. Stable releases are cut from `main`; the `beta` branch publishes prereleases.
 
 ## Building
 
