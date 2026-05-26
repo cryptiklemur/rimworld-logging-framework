@@ -3,11 +3,14 @@ namespace CryptikLemur.RimLogging.Bundle;
 /// <summary>
 /// Uploads a <see cref="BundlePayload"/> to the bundle proxy endpoint over HTTP and interprets the response.
 /// The proxy is expected to return JSON containing a <c>url</c> field pointing at the created gist.
+/// An optional user-supplied GitHub PAT is relayed via the <c>X-Gist-Token</c> header (never in the body,
+/// since the body is stored verbatim as the gist content) so the gist can be created under the user's account.
 /// </summary>
 public sealed class ProxyClient
 {
     private readonly System.Net.Http.HttpClient _http;
     private readonly string _url;
+    private readonly string? _githubToken;
 
     /// <summary>
     /// Creates a client targeting the given proxy URL. If no <see cref="System.Net.Http.HttpClient"/> is
@@ -15,11 +18,13 @@ public sealed class ProxyClient
     /// </summary>
     /// <param name="url">The proxy endpoint URL to POST bundles to.</param>
     /// <param name="http">An optional HTTP client to reuse; a default client is created when <c>null</c>.</param>
+    /// <param name="githubToken">An optional user-supplied GitHub PAT; when non-empty it is relayed to the proxy as an <c>X-Gist-Token</c> header so the gist is created under the user's account.</param>
     /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="url"/> is <c>null</c>.</exception>
-    public ProxyClient(string url, System.Net.Http.HttpClient? http = null)
+    public ProxyClient(string url, System.Net.Http.HttpClient? http = null, string? githubToken = null)
     {
         _url = url ?? throw new System.ArgumentNullException(nameof(url));
         _http = http ?? new System.Net.Http.HttpClient { Timeout = System.TimeSpan.FromSeconds(30) };
+        _githubToken = githubToken;
     }
 
     /// <summary>
@@ -36,7 +41,11 @@ public sealed class ProxyClient
             string json = BundleSerializer.Serialize(payload);
             using System.Net.Http.StringContent content = new System.Net.Http.StringContent(
                 json, System.Text.Encoding.UTF8, "application/json");
-            using System.Net.Http.HttpResponseMessage resp = await _http.PostAsync(_url, content).ConfigureAwait(false);
+            using System.Net.Http.HttpRequestMessage request =
+                new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, _url) { Content = content };
+            if (!string.IsNullOrWhiteSpace(_githubToken))
+                request.Headers.Add("X-Gist-Token", _githubToken);
+            using System.Net.Http.HttpResponseMessage resp = await _http.SendAsync(request).ConfigureAwait(false);
             string body = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
             {

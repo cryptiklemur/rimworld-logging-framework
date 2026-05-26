@@ -233,6 +233,10 @@ make test       # xunit suites
 make format     # dotnet format
 ```
 
+## Translations
+
+English is the source language. The other bundled translations (Chinese Simplified, French, Spanish, German) may be inaccurate. Corrections are welcome via pull request.
+
 ## Contributing
 
 - Run `make build` and `make test` green before opening a PR.

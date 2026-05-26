@@ -26,4 +26,13 @@
     <minLevel>Debug</minLevel>
     <enabledByDefault>false</enabledByDefault>
   </CryptikLemur.RimLogging.Sinks.SinkDef>
+
+  <CryptikLemur.RimLogging.Sinks.SinkDef>
+    <defName>Memory</defName>
+    <label>In-Memory Buffer</label>
+    <description>Retains recent entries in a ring buffer so they can be bundled and uploaded as a bug report.</description>
+    <sinkClass>CryptikLemur.RimLogging.Sinks.MemoryLogSink, CryptikLemur.RimLogging</sinkClass>
+    <minLevel>Info</minLevel>
+    <enabledByDefault>true</enabledByDefault>
+  </CryptikLemur.RimLogging.Sinks.SinkDef>
 </Defs>

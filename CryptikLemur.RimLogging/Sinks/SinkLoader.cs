@@ -48,5 +48,6 @@ internal static class SinkLoader
         [typeof(RollingTextFileSink)] = minLevel => new RollingTextFileSink(logDirectory, retentionCount, minLevel),
         [typeof(RollingJsonFileSink)] = minLevel => new RollingJsonFileSink(logDirectory, retentionCount, minLevel),
         [typeof(VerseLogSink)] = minLevel => new VerseLogSink(minLevel),
+        [typeof(MemoryLogSink)] = minLevel => new MemoryLogSink(minLevel: minLevel),
     };
 }

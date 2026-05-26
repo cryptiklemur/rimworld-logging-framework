@@ -3,12 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { handle } from '../src/index';
 import { RATE_LIMIT_PER_WINDOW } from '../src/ratelimit';
 
-function post(body: unknown, opts: { ip?: string; contentType?: string; contentLength?: string } = {}): Request {
+function post(
+  body: unknown,
+  opts: { ip?: string; contentType?: string; contentLength?: string; gistToken?: string } = {},
+): Request {
   const headers: Record<string, string> = {
     'content-type': opts.contentType ?? 'application/json',
     'cf-connecting-ip': opts.ip ?? '1.1.1.1',
   };
   if (opts.contentLength) headers['content-length'] = opts.contentLength;
+  if (opts.gistToken !== undefined) headers['x-gist-token'] = opts.gistToken;
   return new Request('https://example.com/v1/bundle', {
     method: 'POST',
     headers,
@@ -106,6 +110,30 @@ describe('handle', () => {
     expect(names).toContain('summary.md');
     const bundle = names.find((n) => n !== 'logs.txt' && n !== 'summary.md');
     expect(bundle).toMatch(/^bundle-[0-9a-f]{8}\.json$/);
+  });
+
+  it('uses the relayed x-gist-token as the github token when present', async () => {
+    const f = gistOk();
+    await handle(post(validBundle(), { ip: '8.8.8.8', gistToken: 'ghp_user' }), env, f);
+    const init = f.mock.calls[0]![1] as RequestInit;
+    const headers = init.headers as Record<string, string>;
+    expect(headers.Authorization).toBe('Bearer ghp_user');
+  });
+
+  it('trims the relayed token and falls back to env token when blank', async () => {
+    const f = gistOk();
+    await handle(post(validBundle(), { ip: '8.8.8.9', gistToken: '   ' }), env, f);
+    const init = f.mock.calls[0]![1] as RequestInit;
+    const headers = init.headers as Record<string, string>;
+    expect(headers.Authorization).toBe('Bearer test-token');
+  });
+
+  it('uses env.GITHUB_TOKEN when no x-gist-token header is present', async () => {
+    const f = gistOk();
+    await handle(post(validBundle(), { ip: '9.9.9.9' }), env, f);
+    const init = f.mock.calls[0]![1] as RequestInit;
+    const headers = init.headers as Record<string, string>;
+    expect(headers.Authorization).toBe('Bearer test-token');
   });
 
   it('uses a different bundle filename on each call', async () => {

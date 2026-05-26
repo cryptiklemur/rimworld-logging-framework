@@ -16,9 +16,13 @@ public class ProxyClientTests
         public HttpStatusCode Status = HttpStatusCode.OK;
         public string Body = "{}";
         public Exception? ThrowOnSend;
+        public HttpRequestMessage? LastRequest;
+        public string? LastBody;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            LastRequest = request;
+            LastBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
             if (ThrowOnSend != null) throw ThrowOnSend;
             HttpResponseMessage resp = new HttpResponseMessage(Status)
             {
@@ -89,5 +93,39 @@ public class ProxyClientTests
     public void Ctor_NullUrl_Throws()
     {
         Assert.Throws<ArgumentNullException>(() => new ProxyClient(null!));
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithToken_SendsXGistTokenHeader()
+    {
+        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
+        HttpClient client = new HttpClient(h);
+        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: "ghp_secret");
+        await proxy.UploadAsync(new BundlePayload());
+        Assert.True(h.LastRequest!.Headers.TryGetValues("X-Gist-Token", out IEnumerable<string>? values));
+        Assert.Equal("ghp_secret", Assert.Single(values!));
+    }
+
+    [Fact]
+    public async Task UploadAsync_WithToken_DoesNotLeakIntoBody()
+    {
+        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
+        HttpClient client = new HttpClient(h);
+        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: "ghp_secret");
+        await proxy.UploadAsync(new BundlePayload());
+        Assert.DoesNotContain("ghp_secret", h.LastBody!);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UploadAsync_WithoutToken_OmitsXGistTokenHeader(string? token)
+    {
+        StubHandler h = new StubHandler { Body = "{\"url\":\"https://gist.github.com/x/abc\"}" };
+        HttpClient client = new HttpClient(h);
+        ProxyClient proxy = new ProxyClient("https://proxy.example/upload", client, githubToken: token);
+        await proxy.UploadAsync(new BundlePayload());
+        Assert.False(h.LastRequest!.Headers.Contains("X-Gist-Token"));
     }
 }

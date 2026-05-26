@@ -28,6 +28,9 @@ public sealed class LoggingSettings : ModSettings
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
     public bool captureStackTraces = LoggingSettingsDefaults.CaptureStackTraces;
 
+    /// <summary>Optional user-supplied GitHub PAT; when set, it is relayed to the bundle proxy so gists are created under the user's account. Empty means the proxy uses its own token.</summary>
+    public string githubToken = LoggingSettingsDefaults.GitHubToken;
+
     /// <summary>Serializes and deserializes the settings via RimWorld's Scribe system, applying defaults on post-load.</summary>
     public override void ExposeData()
     {
@@ -36,6 +39,7 @@ public sealed class LoggingSettings : ModSettings
         Scribe_Values.Look(ref retentionCount, "retentionCount", LoggingSettingsDefaults.RetentionCount);
         Scribe_Values.Look(ref proxyUrl, "proxyUrl", LoggingSettingsDefaults.ProxyUrl);
         Scribe_Values.Look(ref captureStackTraces, "captureStackTraces", LoggingSettingsDefaults.CaptureStackTraces);
+        Scribe_Values.Look(ref githubToken, "githubToken", LoggingSettingsDefaults.GitHubToken);
         Scribe_Collections.Look(ref filterPresetNames, "filterPresetNames", LookMode.Value);
         Scribe_Collections.Look(ref filterPresetExpressions, "filterPresetExpressions", LookMode.Value);
         if (Scribe.mode == LoadSaveMode.PostLoadInit)

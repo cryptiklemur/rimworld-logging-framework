@@ -54,7 +54,9 @@ export async function handle(req: Request, env: Env, fetchImpl: FetchLike = fetc
     'logs.txt': { content: renderLogs(v.bundle) },
   };
 
-  const g = await createGist(env.GITHUB_TOKEN, { description, public: false, files }, fetchImpl);
+  const userToken = req.headers.get('x-gist-token')?.trim();
+  const token = userToken ? userToken : env.GITHUB_TOKEN;
+  const g = await createGist(token, { description, public: false, files }, fetchImpl);
   if (!g.ok) return json({ error: 'upstream failed', status: g.status }, 502);
 
   return json({ url: g.url, id: g.id }, 200);

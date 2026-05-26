@@ -119,6 +119,23 @@ public class SinkLoaderTests
         Assert.Null(sink);
     }
 
+    [Fact]
+    public void Build_RegistersMemorySinkViaFactoryWithSpecMinLevel()
+    {
+        Dictionary<Type, Func<LogLevel, ILogSink?>> factories = new()
+        {
+            [typeof(MemoryLogSink)] = minLevel => new MemoryLogSink(minLevel: minLevel),
+        };
+
+        List<ILogSink> result = SinkPlan.Build(
+            [Spec(typeof(MemoryLogSink).AssemblyQualifiedName!, minLevel: LogLevel.Info)],
+            factories,
+            _ => { });
+
+        MemoryLogSink sink = Assert.IsType<MemoryLogSink>(Assert.Single(result));
+        Assert.Equal(LogLevel.Info, sink.MinLevel);
+    }
+
     private sealed class TestParameterlessSink : ILogSink
     {
         public string Name => "TestParameterless";
