@@ -28,9 +28,9 @@ csharp_style_var_elsewhere = false:suggestion
 [Makefile]
 indent_style = tab
 
-# Harmony patch classes follow the Type_Method_Patch convention and expose a
-# Prefix invoked by Harmony via reflection, so the analyzer cannot see the
-# usage. Both Sonar rules are false positives here.
+# Harmony patch classes follow the Type_Method_Patch convention, so the
+# PascalCase naming rule is a false positive here. (The unused-member rule
+# S1144 is suppressed inline on the Prefix methods, since the scanner ignores
+# its editorconfig severity.)
 [**/Hijack/VerseLog_*_Patch.cs]
 dotnet_diagnostic.S101.severity = none
-dotnet_diagnostic.S1144.severity = none
