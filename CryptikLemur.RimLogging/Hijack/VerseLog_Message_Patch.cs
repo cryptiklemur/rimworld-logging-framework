@@ -4,7 +4,7 @@ using CryptikLemur.RimLogging.Pipeline;
 
 namespace CryptikLemur.RimLogging.Hijack;
 
-[HarmonyPatch(typeof(Verse.Log), nameof(Verse.Log.Message), new[] { typeof(string) })]
+[HarmonyPatch(typeof(Verse.Log), nameof(Verse.Log.Message), typeof(string))]
 internal static class VerseLog_Message_Patch
 {
     static bool Prefix(string text)
