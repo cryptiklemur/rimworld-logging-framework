@@ -20,28 +20,25 @@ jobs:
     name: semantic-release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.0.x
             10.0.x
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
       - name: Install release dependencies
         run: npm install
-
-      - name: Install steamdown
-        run: npm install -g @steamdown/cli@1.0.0-beta.2
 
       - name: dotnet restore
         run: dotnet restore CryptikLemur.RimLogging.sln

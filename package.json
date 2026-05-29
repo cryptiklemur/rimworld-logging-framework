@@ -19,9 +19,8 @@
         "@semantic-release/git": "^10.0.1",
         "@semantic-release/github": "^11.0.0",
         "@semantic-release/release-notes-generator": "^14.0.1",
-        "@steamdown/cli": "^1.0.0-beta.2",
         "semantic-release": "^24.1.2",
         "semantic-release-replace-plugin": "^1.2.7",
-        "semantic-release-steam": "^1.0.1"
+        "semantic-release-steam": "^2.0.0"
     }
 }
