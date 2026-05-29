@@ -433,13 +433,13 @@ internal sealed class LogViewerWindow : LightweaveWindow {
                                 LogLevel level = ChipLevels[index];
                                 row.AddHug(Chip.Create(
                                     label: (string)ChipLevelKeys[index].Translate(),
-                                    on: state.Levels[(int)level],
+                                    interactive: true,
+                                    state: state.Levels[(int)level],
                                     onToggle: value => {
                                         state.Levels[(int)level] = value;
                                         invalidate();
                                     },
-                                    variant: ChipVariant.Severity,
-                                    tone: LogFilter.LevelTone(level),
+                                    variant: LogFilter.LevelVariant(level),
                                     id: "logviewer-chip-" + level
                                 ));
                             }

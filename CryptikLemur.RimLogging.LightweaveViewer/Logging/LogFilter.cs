@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cosmere.Lightweave.Feedback;
 using Cosmere.Lightweave.Input;
 using Cosmere.Lightweave.Tokens;
 using CryptikLemur.RimLogging;
@@ -188,18 +189,18 @@ internal static class LogFilter {
         }
     }
 
-    public static ChipTone LevelTone(LogLevel level) {
+    public static ChipVariant LevelVariant(LogLevel level) {
         switch (level) {
             case LogLevel.Trace:
-                return ChipTone.Trace;
+                return ChipVariant.Trace;
             case LogLevel.Debug:
-                return ChipTone.Debug;
+                return ChipVariant.Debug;
             case LogLevel.Info:
-                return ChipTone.Info;
+                return ChipVariant.Info;
             case LogLevel.Warn:
-                return ChipTone.Warn;
+                return ChipVariant.Warn;
             default:
-                return ChipTone.Error;
+                return ChipVariant.Error;
         }
     }
 

@@ -11,7 +11,9 @@ internal static class LogViewerOpenPatch {
         if (sink == null || windowStack == null) {
             return true;
         }
-        windowStack.Add(new LogViewerWindow(sink));
+        if (windowStack.WindowOfType<LogViewerWindow>() == null) {
+            windowStack.Add(new LogViewerWindow(sink));
+        }
         return false;
     }
 }
