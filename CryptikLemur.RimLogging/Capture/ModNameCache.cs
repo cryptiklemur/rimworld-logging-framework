@@ -18,14 +18,14 @@ internal static class ModNameCache
     /// Provider hook for the asm-name to mod-display-name map. Bootstrap sets the Verse-aware
     /// implementation; tests set it directly. When <c>null</c>, the cache yields an empty map.
     /// </summary>
-    internal static Func<IReadOnlyDictionary<string, string>>? Provider;
+    internal static Func<IReadOnlyDictionary<string, string>>? Provider { get; set; }
 
     /// <summary>
     /// Provider hook for the asm-name to mod-folder-name map (the directory name under <c>/Mods/</c>).
     /// Folder name is preferred over the mod display name when rendering normalised source paths
     /// because it is stable and matches what shows up in the file system.
     /// </summary>
-    internal static Func<IReadOnlyDictionary<string, string>>? FolderProvider;
+    internal static Func<IReadOnlyDictionary<string, string>>? FolderProvider { get; set; }
 
     /// <summary>
     /// Diagnostic hook invoked when <see cref="Provider"/> or <see cref="FolderProvider"/> throws.

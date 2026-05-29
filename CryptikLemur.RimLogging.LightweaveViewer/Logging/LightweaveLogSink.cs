@@ -44,6 +44,11 @@ public sealed class LightweaveLogSink : ILogSink {
         EntryAdded?.Invoke(entry);
     }
 
-    public void Flush() { }
-    public void Dispose() { }
+    public void Flush() {
+        // No-op: entries are written synchronously into the in-memory ring buffer; nothing is buffered to flush.
+    }
+
+    public void Dispose() {
+        // No-op: the ring buffer holds only managed LogEntry values, no unmanaged or disposable resources.
+    }
 }

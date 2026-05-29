@@ -62,25 +62,38 @@ internal sealed class BackgroundDrain : IDisposable
         int emptyPolls = 0;
         while (!_stop)
         {
-            if (_queue.TryDequeue(out LogEntry? entry) && entry != null)
-            {
-                try { _dispatch(entry); }
-                catch { /* swallow — logger crash mustn't kill the drain */ }
-                emptyPolls = 0;
-                if (_queue.ApproximateCount == 0) _drained.Set();
-            }
-            else
-            {
-                emptyPolls++;
-                if (emptyPolls < 64) Thread.SpinWait(32);
-                else if (emptyPolls < 256) Thread.Sleep(1);
-                else Thread.Sleep(5);
-            }
+            if (TryDispatchNext()) emptyPolls = 0;
+            else Backoff(++emptyPolls);
         }
-        // Final drain on stop.
+        FinalDrain();
+    }
+
+    private bool TryDispatchNext()
+    {
+        if (!_queue.TryDequeue(out LogEntry? entry) || entry == null) return false;
+        Dispatch(entry);
+        if (_queue.ApproximateCount == 0) _drained.Set();
+        return true;
+    }
+
+    private void Dispatch(LogEntry entry)
+    {
+        try { _dispatch(entry); }
+        catch { /* swallow — logger crash mustn't kill the drain */ }
+    }
+
+    private static void Backoff(int emptyPolls)
+    {
+        if (emptyPolls < 64) Thread.SpinWait(32);
+        else if (emptyPolls < 256) Thread.Sleep(1);
+        else Thread.Sleep(5);
+    }
+
+    private void FinalDrain()
+    {
         while (_queue.TryDequeue(out LogEntry? final) && final != null)
         {
-            try { _dispatch(final); } catch { }
+            Dispatch(final);
         }
     }
 }

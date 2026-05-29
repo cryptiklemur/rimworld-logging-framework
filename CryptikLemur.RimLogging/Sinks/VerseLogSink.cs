@@ -24,7 +24,7 @@ public sealed class VerseLogSink : ILogSink
     /// when hijack installation was skipped (degraded mode), in which case writes
     /// are silently dropped.
     /// </summary>
-    internal static System.Action<LogLevel, string>? VanillaWriter;
+    internal static System.Action<LogLevel, string>? VanillaWriter { get; set; }
 
     /// <inheritdoc/>
     public string Name => "VerseLog";

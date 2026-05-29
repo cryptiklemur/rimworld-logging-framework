@@ -16,7 +16,7 @@ internal static class AssemblyChannelCache
     /// tests may set this directly to assert behavior. When null, the cache
     /// returns <see cref="Unknown"/> for non-vanilla assemblies.
     /// </summary>
-    internal static Func<Assembly, string>? ResolverHook;
+    internal static Func<Assembly, string>? ResolverHook { get; set; }
 
     /// <summary>
     /// Diagnostic hook invoked when <see cref="ResolverHook"/> throws. Bootstrap wires this to

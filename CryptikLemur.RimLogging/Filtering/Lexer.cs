@@ -25,36 +25,56 @@ internal static class Lexer
         {
             char c = input[i];
             if (char.IsWhiteSpace(c)) { i++; continue; }
-            if (c == '(') { tokens.Add(new Token(TokenKind.LParen, "(", i)); i++; continue; }
-            if (c == ')') { tokens.Add(new Token(TokenKind.RParen, ")", i)); i++; continue; }
-            if (c == '"')
-            {
-                int end = input.IndexOf('"', i + 1);
-                if (end < 0) throw new FormatException($"Unterminated string at {i}");
-                tokens.Add(new Token(TokenKind.StringLiteral, input.Substring(i + 1, end - i - 1), i));
-                i = end + 1; continue;
-            }
-            if (c == '=') { tokens.Add(new Token(TokenKind.OpEq, "=", i)); i++; continue; }
-            if (c == '!' && i + 1 < input.Length && input[i + 1] == '=')
-                { tokens.Add(new Token(TokenKind.OpNeq, "!=", i)); i += 2; continue; }
-            if (c == '<' && i + 1 < input.Length && input[i + 1] == '=')
-                { tokens.Add(new Token(TokenKind.OpLte, "<=", i)); i += 2; continue; }
-            if (c == '>' && i + 1 < input.Length && input[i + 1] == '=')
-                { tokens.Add(new Token(TokenKind.OpGte, ">=", i)); i += 2; continue; }
-            if (c == '<') { tokens.Add(new Token(TokenKind.OpLt, "<", i)); i++; continue; }
-            if (c == '>') { tokens.Add(new Token(TokenKind.OpGt, ">", i)); i++; continue; }
-            if (char.IsLetter(c))
-            {
-                int start = i;
-                while (i < input.Length && (char.IsLetterOrDigit(input[i]) || input[i] == '_')) i++;
-                string word = input.Substring(start, i - start);
-                tokens.Add(ClassifyIdent(word, start));
-                continue;
-            }
-            throw new FormatException($"Unexpected character '{c}' at {i}");
+            i = ScanToken(input, i, tokens);
         }
         tokens.Add(new Token(TokenKind.End, "", input.Length));
         return tokens;
+    }
+
+    private static int ScanToken(string input, int i, List<Token> tokens)
+    {
+        char c = input[i];
+        switch (c)
+        {
+            case '(': tokens.Add(new Token(TokenKind.LParen, "(", i)); return i + 1;
+            case ')': tokens.Add(new Token(TokenKind.RParen, ")", i)); return i + 1;
+            case '"': return ScanString(input, i, tokens);
+        }
+        if (c is '=' or '!' or '<' or '>') return ScanOperator(input, i, tokens);
+        if (char.IsLetter(c)) return ScanIdentifier(input, i, tokens);
+        throw new FormatException($"Unexpected character '{c}' at {i}");
+    }
+
+    private static int ScanString(string input, int i, List<Token> tokens)
+    {
+        int end = input.IndexOf('"', i + 1);
+        if (end < 0) throw new FormatException($"Unterminated string at {i}");
+        tokens.Add(new Token(TokenKind.StringLiteral, input.Substring(i + 1, end - i - 1), i));
+        return end + 1;
+    }
+
+    private static int ScanOperator(string input, int i, List<Token> tokens)
+    {
+        char c = input[i];
+        char? next = i + 1 < input.Length ? input[i + 1] : null;
+        switch (c)
+        {
+            case '=': tokens.Add(new Token(TokenKind.OpEq, "=", i)); return i + 1;
+            case '!' when next == '=': tokens.Add(new Token(TokenKind.OpNeq, "!=", i)); return i + 2;
+            case '<' when next == '=': tokens.Add(new Token(TokenKind.OpLte, "<=", i)); return i + 2;
+            case '>' when next == '=': tokens.Add(new Token(TokenKind.OpGte, ">=", i)); return i + 2;
+            case '<': tokens.Add(new Token(TokenKind.OpLt, "<", i)); return i + 1;
+            case '>': tokens.Add(new Token(TokenKind.OpGt, ">", i)); return i + 1;
+            default: throw new FormatException($"Unexpected character '{c}' at {i}");
+        }
+    }
+
+    private static int ScanIdentifier(string input, int i, List<Token> tokens)
+    {
+        int start = i;
+        while (i < input.Length && (char.IsLetterOrDigit(input[i]) || input[i] == '_')) i++;
+        tokens.Add(ClassifyIdent(input.Substring(start, i - start), start));
+        return i;
     }
 
     private static Token ClassifyIdent(string word, int pos)

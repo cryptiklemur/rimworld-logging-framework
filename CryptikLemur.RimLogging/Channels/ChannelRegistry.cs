@@ -28,6 +28,6 @@ public static class ChannelRegistry
     }
 
     /// <summary>All currently registered <see cref="ChannelDef"/>s, or an empty list if the registry is not booted.</summary>
-    public static IReadOnlyList<ChannelDef> AllRegisteredDefs =>
+    public static IReadOnlyList<ChannelDef> GetAllRegisteredDefs() =>
         _byName == null ? [] : _byName.Values.ToList();
 }

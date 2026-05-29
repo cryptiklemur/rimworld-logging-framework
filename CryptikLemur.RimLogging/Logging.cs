@@ -9,7 +9,7 @@ public static class Logging
 {
     private static MpscQueue<LogEntry>? _queue;
     private static BackgroundDrain? _drain;
-    internal static Action<BackgroundDrain>? _installShutdownHook;
+    internal static Action<BackgroundDrain>? InstallShutdownHook { get; set; }
 
     /// <summary>Global minimum level; entries below this are dropped before dispatch.</summary>
     public static LogLevel GlobalMinLevel { get; set; } = LogLevel.Trace;
@@ -17,12 +17,10 @@ public static class Logging
     /// <summary>When <c>true</c>, every emitted entry captures and stores a formatted stack trace. Defaults to <c>true</c>.</summary>
     public static bool CaptureStackTraces { get; set; } = true;
 
-#pragma warning disable CS0649
-    internal static System.Func<bool>? _isDegradedProvider;
-#pragma warning restore CS0649
+    internal static System.Func<bool>? IsDegradedProvider { get; set; }
 
     /// <summary><c>true</c> when this instance is the primary (non-degraded) logger; <c>false</c> if a degraded-mode provider reports otherwise.</summary>
-    public static bool IsPrimary => !(_isDegradedProvider?.Invoke() ?? false);
+    public static bool IsPrimary => !(IsDegradedProvider?.Invoke() ?? false);
 
     /// <summary>Emit a log entry, applying the global minimum-level filter.</summary>
     internal static void Emit(LogEntry entry)
@@ -52,12 +50,12 @@ public static class Logging
 
     /// <summary>
     /// Explicit public lifecycle entry point. Idempotent.
-    /// Invokes <see cref="_installShutdownHook"/> if non-null (wired by Bootstrap; null in tests).
+    /// Invokes <see cref="InstallShutdownHook"/> if non-null (wired by Bootstrap; null in tests).
     /// </summary>
     public static void Init()
     {
         EnsureStarted();
-        if (_drain != null) _installShutdownHook?.Invoke(_drain);
+        if (_drain != null) InstallShutdownHook?.Invoke(_drain);
     }
 
     /// <summary>Tears down the drain and clears queue/drain references. After this, Emit routes synchronously.</summary>
@@ -93,8 +91,8 @@ public static class Logging
     internal static void StopForTests() => Shutdown();
 
     /// <summary>Test seam: installs a shutdown hook, standing in for the Bootstrap wiring.</summary>
-    internal static void SetShutdownHookForTests(Action<BackgroundDrain>? hook) => _installShutdownHook = hook;
+    internal static void SetShutdownHookForTests(Action<BackgroundDrain>? hook) => InstallShutdownHook = hook;
 
     /// <summary>Test seam: clears any installed shutdown hook so tests start from a known state.</summary>
-    internal static void ResetShutdownHookForTests() => _installShutdownHook = null;
+    internal static void ResetShutdownHookForTests() => InstallShutdownHook = null;
 }

@@ -21,9 +21,9 @@ internal static class EarlyInit
     {
         try
         {
-            Logging._installShutdownHook = Pipeline.ShutdownFlush.Install;
+            Logging.InstallShutdownHook = Pipeline.ShutdownFlush.Install;
             Logging.Init();
-            Logging._isDegradedProvider = () => DegradedMode.IsPresent;
+            Logging.IsDegradedProvider = () => DegradedMode.IsPresent;
             Logging.GlobalMinLevel = settings.globalMinLevel;
             Logging.CaptureStackTraces = settings.captureStackTraces;
             if (Hijack.HijackBootstrap.Install())

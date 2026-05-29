@@ -15,6 +15,8 @@ internal static class ReentryGuard
     /// <summary>Gets a value indicating whether the current thread is already inside a sink write.</summary>
     internal static bool IsInsideSink => _inSink;
 
+    private static void ClearInSink() => _inSink = false;
+
     /// <summary>
     /// RAII scope token returned by <see cref="Enter"/>. Disposing the outermost scope clears
     /// the flag; disposing an inner (nested) scope leaves the flag set so the outer scope remains active.
@@ -23,7 +25,7 @@ internal static class ReentryGuard
     {
         private readonly bool _wasAlreadySet;
         internal Scope(bool wasAlreadySet) { _wasAlreadySet = wasAlreadySet; }
-        public void Dispose() { if (!_wasAlreadySet) _inSink = false; }
+        public void Dispose() { if (!_wasAlreadySet) ClearInSink(); }
     }
 
     /// <summary>

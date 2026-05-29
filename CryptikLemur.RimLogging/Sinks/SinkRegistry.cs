@@ -17,7 +17,7 @@ internal static class SinkRegistry
     /// log viewer) receives the complete pre-registration history. Mutable so tests can exercise
     /// the cap cheaply.
     /// </summary>
-    internal static int PostReplayCap = 10000;
+    internal static int PostReplayCap { get; set; } = 10000;
 
     private static readonly List<ILogSink> _sinks = new List<ILogSink>();
     private static readonly Queue<LogEntry> _history = new Queue<LogEntry>();

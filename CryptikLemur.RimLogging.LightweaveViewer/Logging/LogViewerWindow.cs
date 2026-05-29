@@ -7,6 +7,7 @@ using Cosmere.Lightweave.Input;
 using Cosmere.Lightweave.Layout;
 using CryptikLemur.RimLogging.Settings;
 using Cosmere.Lightweave.Runtime;
+using Cosmere.Lightweave.Surfaces;
 using Cosmere.Lightweave.Tokens;
 using Cosmere.Lightweave.Typography;
 using Cosmere.Lightweave.Types;
@@ -14,6 +15,7 @@ using CryptikLemur.RimLogging;
 using CryptikLemur.RimLogging.Filtering;
 using UnityEngine;
 using Verse;
+using Chip = Cosmere.Lightweave.Data.Chip;
 using KeyValue = Cosmere.Lightweave.Data.KeyValue;
 using LogEntry = CryptikLemur.RimLogging.LogEntry;
 using LwList = Cosmere.Lightweave.Data.List;
@@ -281,18 +283,6 @@ internal sealed class LogViewerWindow : LightweaveWindow {
         string channelId = channel.Id;
         int channelDepth = channel.Depth;
 
-        Style rowStyle = active
-            ? new Style {
-                Width = Length.Stretch,
-                Background = BackgroundSpec.Of(ThemeSlot.ActiveTint),
-                Border = new BorderSpec(Left: Spacing.StripeWidth, Color: ThemeSlot.SurfaceAccent),
-                Padding = new EdgeInsets(Top: new Rem(0.3125f), Bottom: new Rem(0.3125f), Left: new Rem(0.875f), Right: new Rem(0.875f)),
-            }
-            : new Style {
-                Width = Length.Stretch,
-                Padding = new EdgeInsets(Top: new Rem(0.3125f), Bottom: new Rem(0.3125f), Left: new Rem(0.875f), Right: new Rem(0.875f)),
-            };
-
         return Button.Create(
             label: string.Empty,
             onClick: () => {
@@ -306,45 +296,65 @@ internal sealed class LogViewerWindow : LightweaveWindow {
             ghost: true,
             body: HStack.Create(
                 gap: new Rem(0.375f),
-                children: row => {
-                    if (channel.Depth > 0) {
-                        row.Add(Box.Create(), new Rem(channel.Depth * 0.875f).ToPixels());
-                    }
-
-                    if (hasChildren) {
-                        row.AddHug(Glyph.Create(
-                            expanded ? Cosmere.Lightweave.Icons.Phosphor.CaretDown : Cosmere.Lightweave.Icons.Phosphor.CaretRight,
-                            style: new Style {
-                                FontSize = new Rem(0.6875f),
-                                TextColor = active ? ThemeSlot.SurfaceAccent : ThemeSlot.TextMuted,
-                            }
-                        ));
-                    } else {
-                        row.Add(Box.Create(), new Rem(0.6875f).ToPixels());
-                    }
-
-                    row.AddFlex(Text.Create(
-                        label,
-                        style: new Style {
-                            FontSize = new Rem(0.8125f),
-                            TextColor = active ? ThemeSlot.SurfaceAccent : ThemeSlot.TextSecondary,
-                        }
-                    ));
-                    row.AddHug(Text.Create(
-                        channel.Count.ToString("N0"),
-                        style: new Style {
-                            FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
-                            FontSize = new Rem(0.6875f),
-                            TextColor = channel.HasError
-                                ? ThemeSlot.StatusDanger
-                                : active ? ThemeSlot.SurfaceAccent : ThemeSlot.TextMuted,
-                        }
-                    ));
-                }
+                children: row => FillChannelRow(row, channel, label, active, hasChildren, expanded)
             ),
-            style: rowStyle,
+            style: ChannelRowStyle(active),
             id: "logviewer-channel-" + channelId
         );
+    }
+
+    private static Style ChannelRowStyle(bool active) {
+        EdgeInsets padding = new EdgeInsets(Top: new Rem(0.3125f), Bottom: new Rem(0.3125f), Left: new Rem(0.875f), Right: new Rem(0.875f));
+        if (!active) {
+            return new Style {
+                Width = Length.Stretch,
+                Padding = padding,
+            };
+        }
+        return new Style {
+            Width = Length.Stretch,
+            Background = BackgroundSpec.Of(ThemeSlot.ActiveTint),
+            Border = new BorderSpec(Left: Spacing.StripeWidth, Color: ThemeSlot.SurfaceAccent),
+            Padding = padding,
+        };
+    }
+
+    private static void FillChannelRow(HStackBuilder row, LogChannel channel, string label, bool active, bool hasChildren, bool expanded) {
+        ThemeSlot caretColor = active ? ThemeSlot.SurfaceAccent : ThemeSlot.TextMuted;
+        ThemeSlot labelColor = active ? ThemeSlot.SurfaceAccent : ThemeSlot.TextSecondary;
+        ThemeSlot countColor = channel.HasError ? ThemeSlot.StatusDanger : caretColor;
+
+        if (channel.Depth > 0) {
+            row.Add(Box.Create(), new Rem(channel.Depth * 0.875f).ToPixels());
+        }
+
+        if (hasChildren) {
+            row.AddHug(Glyph.Create(
+                expanded ? Cosmere.Lightweave.Icons.Phosphor.CaretDown : Cosmere.Lightweave.Icons.Phosphor.CaretRight,
+                style: new Style {
+                    FontSize = new Rem(0.6875f),
+                    TextColor = caretColor,
+                }
+            ));
+        } else {
+            row.Add(Box.Create(), new Rem(0.6875f).ToPixels());
+        }
+
+        row.AddFlex(Text.Create(
+            label,
+            style: new Style {
+                FontSize = new Rem(0.8125f),
+                TextColor = labelColor,
+            }
+        ));
+        row.AddHug(Text.Create(
+            channel.Count.ToString("N0"),
+            style: new Style {
+                FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
+                FontSize = new Rem(0.6875f),
+                TextColor = countColor,
+            }
+        ));
     }
 
     private LightweaveNode BuildListColumn(List<LogEntry> filtered, Action invalidate) {
@@ -548,22 +558,7 @@ internal sealed class LogViewerWindow : LightweaveWindow {
     private LightweaveNode BuildDetail(Action invalidate) {
         LogEntry? entry = state.Selected;
         if (entry == null) {
-            return Column.Create(
-                gap: new Rem(0.625f),
-                align: FlexAlign.Center,
-                justify: FlexJustify.Center,
-                children: col => {
-                    col.Add(Text.Create(
-                        ((string)"CL_LogViewer_NoSelection".Translate()).ToUpperInvariant(),
-                        style: new Style { FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono), FontSize = new Rem(0.65625f), TextColor = ThemeSlot.TextMuted, LetterSpacing = Tracking.Of(0.22f), TextAlign = TextAlign.Center }
-                    ));
-                    col.Add(Text.Create(
-                        (string)"CL_LogViewer_NoSelectionHint".Translate(),
-                        style: new Style { FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Body), FontSize = new Rem(0.8125f), TextColor = ThemeSlot.TextMuted, TextAlign = TextAlign.Center }
-                    ));
-                },
-                style: Fill
-            );
+            return BuildEmptyDetail();
         }
 
         LogEntry detail = entry;
@@ -609,126 +604,7 @@ internal sealed class LogViewerWindow : LightweaveWindow {
 
                 col.AddFlex(Stack.Create(
                     gap: new Rem(0.4375f),
-                    children: body => {
-                        body.Add(DetailRow(
-                            (string)"CL_LogViewer_Detail_Level".Translate(),
-                            detail.Level.ToString().ToUpperInvariant(),
-                            LogFilter.LevelSlot(detail.Level)
-                        ));
-                        body.Add(DetailRow(
-                            (string)"CL_LogViewer_Detail_Channel".Translate(),
-                            detail.Channel,
-                            ChannelColors.For(detail.Channel)
-                        ));
-                        if (!string.IsNullOrEmpty(detail.Mod)) {
-                            body.Add(DetailRow(
-                                (string)"CL_LogViewer_Detail_Mod".Translate(),
-                                detail.Mod!,
-                                ChannelColors.For(detail.Mod)
-                            ));
-                        }
-                        body.Add(DetailRow(
-                            (string)"CL_LogViewer_Detail_Source".Translate(),
-                            detail.Source.IsCallerProvided ? detail.Source.File + ":" + detail.Source.Line : (string)"CL_LogViewer_Detail_NoSource".Translate(),
-                            ThemeSlot.SurfaceAccent
-                        ));
-
-                        if (detail.Context != null && detail.Context.Count > 0) {
-                            foreach (KeyValuePair<string, object?> pair in detail.Context) {
-                                body.Add(DetailRow(
-                                    pair.Key.ToUpperInvariant(),
-                                    pair.Value?.ToString() ?? "null",
-                                    ThemeSlot.TextSecondary
-                                ));
-                            }
-                        }
-
-                        string trace = detail.StackTrace ?? detail.Exception?.ToString() ?? string.Empty;
-
-                        if (combined) {
-                            body.Add(Text.Create(
-                                ((string)"CL_LogViewer_Detail_MessageAndStack".Translate()).ToUpperInvariant(),
-                                style: new Style {
-                                    FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
-                                    FontSize = new Rem(0.625f),
-                                    TextColor = ThemeSlot.TextMuted,
-                                    LetterSpacing = Tracking.Of(0.18f),
-                                }
-                            ));
-                            string combinedText = string.IsNullOrEmpty(trace)
-                                ? detail.RenderedMessage
-                                : detail.RenderedMessage + "\n\n" + trace;
-                            body.AddFlex(ScrollArea.Create(
-                                content: TextArea.Create(
-                                    value: combinedText,
-                                    onChange: _ => { },
-                                    readOnly: true,
-                                    minRows: 1,
-                                    maxRows: int.MaxValue,
-                                    instanceKey: "message-and-stack",
-                                    id: "logviewer-message-and-stack",
-                                    style: new Style { Width = Length.Stretch, Height = Length.Stretch }
-                                ),
-                                resetKey: detail.Timestamp,
-                                edge: true,
-                                stretchContent: true,
-                                style: new Style { Width = Length.Stretch, Height = Length.Stretch }
-                            ));
-                        }
-                        else {
-                            body.Add(Text.Create(
-                                ((string)"CL_LogViewer_Detail_Message".Translate()).ToUpperInvariant(),
-                                style: new Style {
-                                    FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
-                                    FontSize = new Rem(0.625f),
-                                    TextColor = ThemeSlot.TextMuted,
-                                    LetterSpacing = Tracking.Of(0.18f),
-                                }
-                            ));
-                            body.AddFlex(ScrollArea.Create(
-                                content: TextArea.Create(
-                                    value: detail.RenderedMessage,
-                                    onChange: _ => { },
-                                    readOnly: true,
-                                    minRows: 1,
-                                    maxRows: int.MaxValue,
-                                    instanceKey: "message",
-                                    id: "logviewer-message",
-                                    style: new Style { Width = Length.Stretch, Height = Length.Stretch }
-                                ),
-                                resetKey: detail.Timestamp,
-                                edge: true,
-                                stretchContent: true,
-                                style: new Style { Width = Length.Stretch, Height = Length.Stretch }
-                            ));
-                            body.Add(Text.Create(
-                                ((string)"CL_LogViewer_Detail_Stack".Translate()).ToUpperInvariant(),
-                                style: new Style {
-                                    FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
-                                    FontSize = new Rem(0.625f),
-                                    TextColor = ThemeSlot.TextMuted,
-                                    LetterSpacing = Tracking.Of(0.18f),
-                                }
-                            ));
-                            body.AddFlex(ScrollArea.Create(
-                                content: TextArea.Create(
-                                    value: trace,
-                                    onChange: _ => { },
-                                    placeholder: (string)"CL_LogViewer_Detail_NoStack".Translate(),
-                                    readOnly: true,
-                                    minRows: 1,
-                                    maxRows: int.MaxValue,
-                                    instanceKey: "stack",
-                                    id: "logviewer-stack",
-                                    style: new Style { Width = Length.Stretch, Height = Length.Stretch }
-                                ),
-                                resetKey: detail.Timestamp,
-                                edge: true,
-                                stretchContent: true,
-                                style: new Style { Width = Length.Stretch, Height = Length.Stretch }
-                            ));
-                        }
-                    },
+                    children: body => FillDetailBody(body, detail, combined),
                     style: new Style {
                         Width = Length.Stretch,
                         Height = Length.Stretch,
@@ -738,6 +614,146 @@ internal sealed class LogViewerWindow : LightweaveWindow {
             },
             style: Fill
         );
+    }
+
+    private LightweaveNode BuildEmptyDetail() {
+        return Column.Create(
+            gap: new Rem(0.625f),
+            align: FlexAlign.Center,
+            justify: FlexJustify.Center,
+            children: col => {
+                col.Add(Text.Create(
+                    ((string)"CL_LogViewer_NoSelection".Translate()).ToUpperInvariant(),
+                    style: new Style { FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono), FontSize = new Rem(0.65625f), TextColor = ThemeSlot.TextMuted, LetterSpacing = Tracking.Of(0.22f), TextAlign = TextAlign.Center }
+                ));
+                col.Add(Text.Create(
+                    (string)"CL_LogViewer_NoSelectionHint".Translate(),
+                    style: new Style { FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Body), FontSize = new Rem(0.8125f), TextColor = ThemeSlot.TextMuted, TextAlign = TextAlign.Center }
+                ));
+            },
+            style: Fill
+        );
+    }
+
+    private void FillDetailBody(StackBuilder body, LogEntry detail, bool combined) {
+        body.Add(DetailRow(
+            (string)"CL_LogViewer_Detail_Level".Translate(),
+            detail.Level.ToString().ToUpperInvariant(),
+            LogFilter.LevelSlot(detail.Level)
+        ));
+        body.Add(DetailRow(
+            (string)"CL_LogViewer_Detail_Channel".Translate(),
+            detail.Channel,
+            ChannelColors.For(detail.Channel)
+        ));
+        if (!string.IsNullOrEmpty(detail.Mod)) {
+            body.Add(DetailRow(
+                (string)"CL_LogViewer_Detail_Mod".Translate(),
+                detail.Mod!,
+                ChannelColors.For(detail.Mod)
+            ));
+        }
+        body.Add(DetailRow(
+            (string)"CL_LogViewer_Detail_Source".Translate(),
+            detail.Source.IsCallerProvided ? detail.Source.File + ":" + detail.Source.Line : (string)"CL_LogViewer_Detail_NoSource".Translate(),
+            ThemeSlot.SurfaceAccent
+        ));
+
+        if (detail.Context != null && detail.Context.Count > 0) {
+            foreach (KeyValuePair<string, object?> pair in detail.Context) {
+                body.Add(DetailRow(
+                    pair.Key.ToUpperInvariant(),
+                    pair.Value?.ToString() ?? "null",
+                    ThemeSlot.TextSecondary
+                ));
+            }
+        }
+
+        string trace = detail.StackTrace ?? detail.Exception?.ToString() ?? string.Empty;
+
+        if (combined) {
+            body.Add(Text.Create(
+                ((string)"CL_LogViewer_Detail_MessageAndStack".Translate()).ToUpperInvariant(),
+                style: new Style {
+                    FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
+                    FontSize = new Rem(0.625f),
+                    TextColor = ThemeSlot.TextMuted,
+                    LetterSpacing = Tracking.Of(0.18f),
+                }
+            ));
+            string combinedText = string.IsNullOrEmpty(trace)
+                ? detail.RenderedMessage
+                : detail.RenderedMessage + "\n\n" + trace;
+            body.AddFlex(ScrollArea.Create(
+                content: TextArea.Create(
+                    value: combinedText,
+                    onChange: _ => { },
+                    readOnly: true,
+                    minRows: 1,
+                    maxRows: int.MaxValue,
+                    instanceKey: "message-and-stack",
+                    id: "logviewer-message-and-stack",
+                    style: new Style { Width = Length.Stretch, Height = Length.Stretch }
+                ),
+                resetKey: detail.Timestamp,
+                edge: true,
+                stretchContent: true,
+                style: new Style { Width = Length.Stretch, Height = Length.Stretch }
+            ));
+        }
+        else {
+            body.Add(Text.Create(
+                ((string)"CL_LogViewer_Detail_Message".Translate()).ToUpperInvariant(),
+                style: new Style {
+                    FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
+                    FontSize = new Rem(0.625f),
+                    TextColor = ThemeSlot.TextMuted,
+                    LetterSpacing = Tracking.Of(0.18f),
+                }
+            ));
+            body.AddFlex(ScrollArea.Create(
+                content: TextArea.Create(
+                    value: detail.RenderedMessage,
+                    onChange: _ => { },
+                    readOnly: true,
+                    minRows: 1,
+                    maxRows: int.MaxValue,
+                    instanceKey: "message",
+                    id: "logviewer-message",
+                    style: new Style { Width = Length.Stretch, Height = Length.Stretch }
+                ),
+                resetKey: detail.Timestamp,
+                edge: true,
+                stretchContent: true,
+                style: new Style { Width = Length.Stretch, Height = Length.Stretch }
+            ));
+            body.Add(Text.Create(
+                ((string)"CL_LogViewer_Detail_Stack".Translate()).ToUpperInvariant(),
+                style: new Style {
+                    FontFamily = RenderContext.Current.Theme.GetFont(FontRole.Mono),
+                    FontSize = new Rem(0.625f),
+                    TextColor = ThemeSlot.TextMuted,
+                    LetterSpacing = Tracking.Of(0.18f),
+                }
+            ));
+            body.AddFlex(ScrollArea.Create(
+                content: TextArea.Create(
+                    value: trace,
+                    onChange: _ => { },
+                    placeholder: (string)"CL_LogViewer_Detail_NoStack".Translate(),
+                    readOnly: true,
+                    minRows: 1,
+                    maxRows: int.MaxValue,
+                    instanceKey: "stack",
+                    id: "logviewer-stack",
+                    style: new Style { Width = Length.Stretch, Height = Length.Stretch }
+                ),
+                resetKey: detail.Timestamp,
+                edge: true,
+                stretchContent: true,
+                style: new Style { Width = Length.Stretch, Height = Length.Stretch }
+            ));
+        }
     }
 
     private static LightweaveNode DetailRow(string keyLabel, string value, ColorRef valueColor, bool wrap = false) {

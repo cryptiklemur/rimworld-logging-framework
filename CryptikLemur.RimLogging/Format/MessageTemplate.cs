@@ -27,6 +27,7 @@ public sealed class MessageTemplate
     }
 
     /// <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
+    /// <summary>Parses a raw template string into named holes and surrounding literal segments.</summary>
     public static MessageTemplate Parse(string raw)
     {
         if (raw == null) throw new ArgumentNullException(nameof(raw));
@@ -38,46 +39,42 @@ public sealed class MessageTemplate
         int i = 0;
         while (i < raw.Length)
         {
-            char c = raw[i];
-            if (c == '{' && i + 1 < raw.Length && raw[i + 1] == '{')
-            {
-                seg.Append('{');
-                i += 2;
-                continue;
-            }
-            if (c == '}' && i + 1 < raw.Length && raw[i + 1] == '}')
-            {
-                seg.Append('}');
-                i += 2;
-                continue;
-            }
-            if (c == '{')
-            {
-                int close = raw.IndexOf('}', i + 1);
-                if (close < 0)
-                {
-                    seg.Append(raw, i, raw.Length - i);
-                    i = raw.Length;
-                    continue;
-                }
-                string name = raw.Substring(i + 1, close - i - 1);
-                if (name.Length == 0 || ContainsBrace(name))
-                {
-                    seg.Append(raw, i, close - i + 1);
-                    i = close + 1;
-                    continue;
-                }
-                segments.Add(seg.ToString());
-                seg.Clear();
-                holes.Add(name);
-                i = close + 1;
-                continue;
-            }
-            seg.Append(c);
-            i++;
+            i = AppendNext(raw, i, seg, holes, segments);
         }
         segments.Add(seg.ToString());
         return new MessageTemplate(raw, holes, segments);
+    }
+
+    private static int AppendNext(string raw, int i, System.Text.StringBuilder seg, List<string> holes, List<string> segments)
+    {
+        char c = raw[i];
+        if (IsEscapedBrace(raw, i)) { seg.Append(c); return i + 2; }
+        if (c == '{') return ReadHole(raw, i, seg, holes, segments);
+        seg.Append(c);
+        return i + 1;
+    }
+
+    private static bool IsEscapedBrace(string raw, int i) =>
+        (raw[i] == '{' || raw[i] == '}') && i + 1 < raw.Length && raw[i + 1] == raw[i];
+
+    private static int ReadHole(string raw, int i, System.Text.StringBuilder seg, List<string> holes, List<string> segments)
+    {
+        int close = raw.IndexOf('}', i + 1);
+        if (close < 0)
+        {
+            seg.Append(raw, i, raw.Length - i);
+            return raw.Length;
+        }
+        string name = raw.Substring(i + 1, close - i - 1);
+        if (name.Length == 0 || ContainsBrace(name))
+        {
+            seg.Append(raw, i, close - i + 1);
+            return close + 1;
+        }
+        segments.Add(seg.ToString());
+        seg.Clear();
+        holes.Add(name);
+        return close + 1;
     }
 
     /// <summary>Renders the template by substituting positional args into holes and returns the formatted string plus a name-to-value context dictionary.</summary>

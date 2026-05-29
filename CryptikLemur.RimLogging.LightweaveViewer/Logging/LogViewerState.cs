@@ -47,7 +47,7 @@ internal sealed class LogViewerState {
 
 internal static class LogViewerSession {
     public static readonly bool[] Levels = { false, false, true, true, true, true };
-    public static string DslSource = "";
-    public static string ChannelFilter = "";
-    public static string? DslError;
+    public static string DslSource { get; set; } = "";
+    public static string ChannelFilter { get; set; } = "";
+    public static string? DslError { get; set; }
 }
