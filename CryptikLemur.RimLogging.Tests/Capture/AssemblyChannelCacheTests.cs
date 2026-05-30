@@ -13,6 +13,7 @@ public class AssemblyChannelCacheTests : IDisposable
     {
         AssemblyChannelCache.ResolverHook = null;
         AssemblyChannelCache.ClearForTests();
+        GC.SuppressFinalize(this);
     }
 
     [Theory]

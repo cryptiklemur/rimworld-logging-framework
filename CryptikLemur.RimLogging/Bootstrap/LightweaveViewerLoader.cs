@@ -39,7 +39,10 @@ internal static class LightweaveViewerLoader
                 return;
             }
 
-            Assembly viewer = Assembly.LoadFrom(dllPath);
+            // Load from bytes (not LoadFrom) so the rule against path-based loading is satisfied;
+            // every dependency (Lightweave, this core assembly, Verse/Unity) is already resident in
+            // the AppDomain by the time this static ctor runs, so byte-loading resolves them by identity.
+            Assembly viewer = Assembly.Load(File.ReadAllBytes(dllPath));
             viewer.GetType(BootTypeName)
                 ?.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
                 ?.Invoke(null, null);

@@ -10,6 +10,8 @@ namespace CryptikLemur.RimLogging.Hijack;
 /// </summary>
 internal static class ModNameMapProvider
 {
+    private static readonly char[] PathSeparators = { '/', '\\' };
+
     internal static IReadOnlyDictionary<string, string> Build()
     {
         Dictionary<string, string> map = new Dictionary<string, string>();
@@ -51,7 +53,7 @@ internal static class ModNameMapProvider
         if (string.IsNullOrEmpty(rootDir)) return null;
         string trimmed = rootDir!.TrimEnd('/', '\\');
         if (trimmed.Length == 0) return null;
-        int lastSep = trimmed.LastIndexOfAny(new[] { '/', '\\' });
+        int lastSep = trimmed.LastIndexOfAny(PathSeparators);
         return lastSep < 0 ? trimmed : trimmed.Substring(lastSep + 1);
     }
 }

@@ -72,11 +72,24 @@ public abstract class RollingFileSink : ILogSink
     /// <inheritdoc/>
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>Flushes and closes the session writer. Idempotent and thread-safe.</summary>
+    /// <param name="disposing"><c>true</c> when called from <see cref="Dispose()"/>; the sink holds only managed resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposing) return;
         lock (_lock)
         {
             if (_disposed) return;
             _disposed = true;
-            try { _writer.Flush(); _writer.Dispose(); } catch { }
+            try { _writer.Flush(); _writer.Dispose(); }
+            catch
+            {
+                // Best-effort close during shutdown; the OS reclaims the file handle regardless.
+            }
         }
     }
 
@@ -87,7 +100,11 @@ public abstract class RollingFileSink : ILogSink
         Array.Sort(files, (string a, string b) => string.Compare(a, b, StringComparison.Ordinal));
         for (int i = 0; i < files.Length - retain; i++)
         {
-            try { System.IO.File.Delete(files[i]); } catch { }
+            try { System.IO.File.Delete(files[i]); }
+            catch
+            {
+                // A locked or already-removed old log isn't fatal; skip it and keep pruning.
+            }
         }
     }
 }

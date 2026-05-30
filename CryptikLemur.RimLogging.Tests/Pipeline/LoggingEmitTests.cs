@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using CryptikLemur.RimLogging;
 using CryptikLemur.RimLogging.Sinks;
 using Xunit;
@@ -25,12 +24,13 @@ public class LoggingEmitTests : IDisposable
         Logging.GlobalMinLevel = _savedMin;
         SinkRegistry.Remove(_sink);
         _sink.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
     public void Error_BypassesQueue_DispatchesOnCallingThread()
     {
-        int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+        int callingThreadId = Environment.CurrentManagedThreadId;
         int dispatchedThreadId = -1;
         ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
         SinkRegistry.Register(captureSink);
@@ -44,7 +44,7 @@ public class LoggingEmitTests : IDisposable
     [Fact]
     public void Info_WithDrainStarted_DispatchesOnDrainThread()
     {
-        int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+        int callingThreadId = Environment.CurrentManagedThreadId;
         ManualResetEventSlim dispatched = new ManualResetEventSlim(false);
         int dispatchedThreadId = -1;
         ThreadCaptureSink captureSink = new ThreadCaptureSink(id =>

@@ -6,7 +6,7 @@ namespace CryptikLemur.RimLogging.Tests.Capture;
 
 public class ModResolutionTests
 {
-    private static IReadOnlyDictionary<string, string> Map(params (string Asm, string Mod)[] pairs)
+    private static Dictionary<string, string> Map(params (string Asm, string Mod)[] pairs)
     {
         Dictionary<string, string> map = new Dictionary<string, string>();
         foreach ((string asm, string mod) in pairs) map[asm] = mod;

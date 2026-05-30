@@ -27,6 +27,7 @@ public class AssemblyMappingTests : IDisposable
     {
         AssemblyChannelCache.ResolverHook = _savedHook;
         AssemblyChannelCache.ClearForTests();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

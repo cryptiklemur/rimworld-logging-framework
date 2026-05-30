@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using CryptikLemur.RimLogging;
 using CryptikLemur.RimLogging.Pipeline;
 using CryptikLemur.RimLogging.Sinks;
@@ -25,6 +24,7 @@ public class LoggingLifecycleTests : IDisposable
         SinkRegistry.DisposeAll();
         Logging.GlobalMinLevel = _savedMin;
         Logging.ResetShutdownHookForTests();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class LoggingLifecycleTests : IDisposable
         Logging.Shutdown();
 
         // After Shutdown, Emit should route synchronously (drain == null).
-        int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+        int callingThreadId = Environment.CurrentManagedThreadId;
         int dispatchedThreadId = -1;
         ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
         SinkRegistry.Register(captureSink);
@@ -84,7 +84,7 @@ public class LoggingLifecycleTests : IDisposable
         Logging.Init();
         Logging.Shutdown();
 
-        int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+        int callingThreadId = Environment.CurrentManagedThreadId;
         int dispatchedThreadId = -1;
         ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
         SinkRegistry.Register(captureSink);

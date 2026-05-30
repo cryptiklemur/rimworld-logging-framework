@@ -16,6 +16,7 @@ public class ManifestVersionReaderTests : IDisposable
     {
         try { Directory.Delete(_tempRoot, recursive: true); }
         catch { }
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

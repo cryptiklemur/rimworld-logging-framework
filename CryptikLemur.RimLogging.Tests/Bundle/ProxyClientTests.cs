@@ -22,7 +22,7 @@ public class ProxyClientTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             LastRequest = request;
-            LastBody = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
+            LastBody = request.Content?.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
             if (ThrowOnSend != null) throw ThrowOnSend;
             HttpResponseMessage resp = new HttpResponseMessage(Status)
             {

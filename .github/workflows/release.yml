@@ -38,7 +38,7 @@ jobs:
           node-version: 20
 
       - name: Install release dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
 
       - name: dotnet restore
         run: dotnet restore CryptikLemur.RimLogging.sln
@@ -79,4 +79,4 @@ jobs:
           STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
           STEAM_CONFIG_VDF: ${{ env.STEAM_CONFIG_VDF }}
           STEAMCMD_PATH: ${{ env.STEAM_CMD }}/steamcmd.sh
-        run: npx semantic-release
+        run: ./node_modules/.bin/semantic-release

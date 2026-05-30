@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading;
 using CryptikLemur.RimLogging.Pipeline;
 using CryptikLemur.RimLogging.Sinks;
 using Xunit;
@@ -32,6 +31,7 @@ public class PipelineEndToEndTests : IDisposable
         SinkRegistry.DisposeAll();
         Logging.GlobalMinLevel = _savedMin;
         Logging.ResetShutdownHookForTests();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class PipelineEndToEndTests : IDisposable
     {
         Logging.Init();
 
-        int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+        int callingThreadId = Environment.CurrentManagedThreadId;
         int dispatchedThreadId = -1;
         ThreadCaptureSink captureSink = new ThreadCaptureSink(id => dispatchedThreadId = id);
         SinkRegistry.Register(captureSink);

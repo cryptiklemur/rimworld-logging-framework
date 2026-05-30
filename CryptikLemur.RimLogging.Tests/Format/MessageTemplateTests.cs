@@ -8,23 +8,27 @@ namespace CryptikLemur.RimLogging.Tests.Format;
 
 public class MessageTemplateTests
 {
+    private static readonly string[] NameHpHoles = ["Name", "Hp"];
+    private static readonly string[] DeathSegments = ["player ", " died at ", "hp"];
+    private static readonly string[] EmptySegment = [""];
+
     [Fact]
     public void Construct_StoresRawTemplate()
     {
         MessageTemplate t = new MessageTemplate(
             raw: "player {Name} died at {Hp}hp",
-            holes: new[] { "Name", "Hp" },
-            segments: new[] { "player ", " died at ", "hp" });
+            holes: NameHpHoles,
+            segments: DeathSegments);
 
         Assert.Equal("player {Name} died at {Hp}hp", t.Raw);
-        Assert.Equal(new[] { "Name", "Hp" }, t.Holes);
-        Assert.Equal(new[] { "player ", " died at ", "hp" }, t.Segments);
+        Assert.Equal(NameHpHoles, t.Holes);
+        Assert.Equal(DeathSegments, t.Segments);
     }
 
     [Fact]
     public void Construct_AllowsEmptyTemplate()
     {
-        MessageTemplate t = new MessageTemplate("", new string[0], new[] { "" });
+        MessageTemplate t = new MessageTemplate("", Array.Empty<string>(), EmptySegment);
         Assert.Equal("", t.Raw);
         Assert.Empty(t.Holes);
     }

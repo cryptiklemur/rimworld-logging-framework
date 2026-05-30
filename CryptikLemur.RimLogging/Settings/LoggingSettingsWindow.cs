@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using CryptikLemur.RimLogging.Bundle;
 using CryptikLemur.RimLogging.Sinks;
@@ -54,7 +55,7 @@ public static class LoggingSettingsWindow
         l.Gap();
         if (l.ButtonText("CRL_Settings_UploadBundle".Translate()))
         {
-            StartUpload(s);
+            _ = StartUpload(s);
         }
 
         l.Gap();
@@ -78,7 +79,7 @@ public static class LoggingSettingsWindow
     /// player; the result message is marshaled back to the main thread before being shown.
     /// </summary>
     /// <param name="s">The settings supplying the proxy URL and optional GitHub token.</param>
-    private static async void StartUpload(LoggingSettings s)
+    private static async Task StartUpload(LoggingSettings s)
     {
         try
         {

@@ -19,6 +19,7 @@ public class RollingTextFileSinkTests : IDisposable
     {
         if (Directory.Exists(_tempDir))
             Directory.Delete(_tempDir, recursive: true);
+        GC.SuppressFinalize(this);
     }
 
     private static LogEntry MakeEntry(LogLevel level = LogLevel.Info, string message = "test")

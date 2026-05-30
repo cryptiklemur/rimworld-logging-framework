@@ -25,7 +25,7 @@ export async function handle(req: Request, env: Env, fetchImpl: FetchLike = fetc
   if (!ct.includes('application/json')) return json({ error: 'expected application/json' }, 415);
 
   const cl = req.headers.get('content-length');
-  if (cl && parseInt(cl, 10) > MAX_BODY_BYTES) return json({ error: 'payload too large' }, 413);
+  if (cl && Number.parseInt(cl, 10) > MAX_BODY_BYTES) return json({ error: 'payload too large' }, 413);
 
   const ip = req.headers.get('cf-connecting-ip') ?? 'unknown';
   const rl = await checkRateLimit(env.RATELIMIT, ip);
@@ -55,7 +55,7 @@ export async function handle(req: Request, env: Env, fetchImpl: FetchLike = fetc
   };
 
   const userToken = req.headers.get('x-gist-token')?.trim();
-  const token = userToken ? userToken : env.GITHUB_TOKEN;
+  const token = userToken || env.GITHUB_TOKEN;
   const g = await createGist(token, { description, public: false, files }, fetchImpl);
   if (!g.ok) return json({ error: 'upstream failed', status: g.status }, 502);
 

@@ -9,7 +9,11 @@ public class ModNameCacheTests : IDisposable
 {
     public ModNameCacheTests() => ModNameCache.ClearForTests();
 
-    public void Dispose() => ModNameCache.ClearForTests();
+    public void Dispose()
+    {
+        ModNameCache.ClearForTests();
+        GC.SuppressFinalize(this);
+    }
 
     [Fact]
     public void Map_NoProvider_ReturnsEmpty()

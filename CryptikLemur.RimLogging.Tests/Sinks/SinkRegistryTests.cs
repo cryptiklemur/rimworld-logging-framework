@@ -9,6 +9,11 @@ namespace CryptikLemur.RimLogging.Tests.Sinks;
 public class SinkRegistryTests : IDisposable
 {
     private readonly int _savedCap;
+    private static readonly string[] ExpectedH1H2H3 = ["h1", "h2", "h3"];
+    private static readonly string[] ExpectedError = ["error"];
+    private static readonly string[] ExpectedE1ToE5 = ["e1", "e2", "e3", "e4", "e5"];
+    private static readonly string[] ExpectedE3ToE5 = ["e3", "e4", "e5"];
+    private static readonly string[] ExpectedE1ToE4 = ["e1", "e2", "e3", "e4"];
 
     public SinkRegistryTests()
     {
@@ -20,6 +25,7 @@ public class SinkRegistryTests : IDisposable
     {
         SinkRegistry.PostReplayCap = _savedCap;
         SinkRegistry.DisposeAll();
+        GC.SuppressFinalize(this);
     }
 
     private static LogEntry MakeEntry(string message = "test", LogLevel level = LogLevel.Info)
@@ -194,7 +200,7 @@ public class SinkRegistryTests : IDisposable
 
         SinkRegistry.Register(late);
 
-        Assert.Equal(new[] { "h1", "h2", "h3" }, late.Messages());
+        Assert.Equal(ExpectedH1H2H3, late.Messages());
     }
 
     [Fact]
@@ -207,7 +213,7 @@ public class SinkRegistryTests : IDisposable
 
         SinkRegistry.Register(late);
 
-        Assert.Equal(new[] { "error" }, late.Messages());
+        Assert.Equal(ExpectedError, late.Messages());
     }
 
     [Fact]
@@ -220,7 +226,7 @@ public class SinkRegistryTests : IDisposable
         SinkRegistry.Register(late);
 
         // No sink had triggered a replay, so all 5 are retained despite the cap of 3.
-        Assert.Equal(new[] { "e1", "e2", "e3", "e4", "e5" }, late.Messages());
+        Assert.Equal(ExpectedE1ToE5, late.Messages());
     }
 
     [Fact]
@@ -233,7 +239,7 @@ public class SinkRegistryTests : IDisposable
 
         SinkRegistry.Register(second);
 
-        Assert.Equal(new[] { "e3", "e4", "e5" }, second.Messages());
+        Assert.Equal(ExpectedE3ToE5, second.Messages());
     }
 
     [Fact]
@@ -249,7 +255,7 @@ public class SinkRegistryTests : IDisposable
         SinkRegistry.DispatchSynchronously(MakeEntry("e4"));
 
         // e1,e2 via replay then e3,e4 live — each exactly once, in order, no duplication.
-        Assert.Equal(new[] { "e1", "e2", "e3", "e4" }, sink.Messages());
+        Assert.Equal(ExpectedE1ToE4, sink.Messages());
     }
 
     [Fact]

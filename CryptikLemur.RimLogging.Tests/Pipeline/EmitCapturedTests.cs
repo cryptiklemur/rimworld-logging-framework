@@ -27,6 +27,7 @@ public class EmitCapturedTests : IDisposable
         Logging.CaptureStackTraces = _savedCapture;
         SinkRegistry.Remove(_sink);
         _sink.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

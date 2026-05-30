@@ -21,6 +21,7 @@ public class RollingJsonFileSinkTests : IDisposable
     {
         if (Directory.Exists(_tempDir))
             Directory.Delete(_tempDir, recursive: true);
+        GC.SuppressFinalize(this);
     }
 
     private static LogEntry MakeEntry(

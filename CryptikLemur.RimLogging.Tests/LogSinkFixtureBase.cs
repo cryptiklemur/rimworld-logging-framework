@@ -25,5 +25,6 @@ public abstract class LogSinkFixtureBase : IDisposable
         Logging.GlobalMinLevel = _savedMin;
         SinkRegistry.Remove(_sink);
         _sink.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

@@ -17,17 +17,17 @@ export function validateBundle(raw: unknown): ValidationResult {
   if (typeof r.rimWorldVersion !== 'string') errors.push('rimWorldVersion must be a string');
   if (typeof r.frameworkVersion !== 'string') errors.push('frameworkVersion must be a string');
 
-  if (!Array.isArray(r.mods)) {
-    errors.push('mods must be an array');
-  } else {
+  if (Array.isArray(r.mods)) {
     r.mods.forEach((m, i) => validateMod(m, i, errors));
+  } else {
+    errors.push('mods must be an array');
   }
 
-  if (!Array.isArray(r.entries)) {
-    errors.push('entries must be an array');
-  } else {
+  if (Array.isArray(r.entries)) {
     if (r.entries.length > MAX_ENTRIES) errors.push(`entries exceeds max of ${MAX_ENTRIES}`);
     r.entries.forEach((e, i) => validateEntry(e, i, errors));
+  } else {
+    errors.push('entries must be an array');
   }
 
   if (errors.length > 0) return { ok: false, errors };
