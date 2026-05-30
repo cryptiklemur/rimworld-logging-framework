@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace CryptikLemur.RimLogging.Bootstrap;
 
 internal static class DegradedMode
@@ -17,13 +19,10 @@ internal static class DegradedMode
             HarmonyLib.Patches? patches = HarmonyLib.Harmony.GetPatchInfo(target);
             if (patches == null) return false;
 
-            foreach (HarmonyLib.Patch p in patches.Prefixes)
+            if (patches.Prefixes.Any(p => p.owner.StartsWith("CryptikLemur.RimLogging", System.StringComparison.OrdinalIgnoreCase)))
             {
-                if (p.owner.StartsWith("CryptikLemur.RimLogging", System.StringComparison.OrdinalIgnoreCase))
-                {
-                    _detected = true;
-                    return true;
-                }
+                _detected = true;
+                return true;
             }
         }
         catch

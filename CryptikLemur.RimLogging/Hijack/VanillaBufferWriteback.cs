@@ -10,15 +10,9 @@ namespace CryptikLemur.RimLogging.Hijack;
 internal static class VanillaBufferWriteback
 {
     /// <summary>Prevents duplicate-suppression by resetting the vanilla message counter after each write.</summary>
-    private static readonly System.Reflection.MethodInfo? _resetMessageCount;
-
-    static VanillaBufferWriteback()
-    {
-        System.Type logT = typeof(Verse.Log);
-        _resetMessageCount = logT.GetMethod(
-            "ResetMessageCount",
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-    }
+    private static readonly System.Reflection.MethodInfo? _resetMessageCount = typeof(Verse.Log).GetMethod(
+        "ResetMessageCount",
+        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
 
     /// <summary>
     /// Writes <paramref name="coloredLine"/> into the appropriate vanilla log method based on

@@ -1,5 +1,7 @@
 # RimLogging
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=cryptiklemur_rimworld-logging-framework&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=cryptiklemur_rimworld-logging-framework)
+
 A public, structured logging framework for RimWorld 1.6+ mods.
 
 ## What it is

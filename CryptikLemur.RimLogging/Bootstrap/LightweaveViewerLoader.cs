@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using Verse;
@@ -56,13 +57,8 @@ internal static class LightweaveViewerLoader
 
     private static string? ResolveViewerDllPath()
     {
-        foreach (ModContentPack pack in LoadedModManager.RunningModsListForReading)
-        {
-            if (pack.PackageId.Equals(SelfPackageId, StringComparison.OrdinalIgnoreCase))
-            {
-                return Path.Combine(pack.RootDir, ViewerFolder, ViewerDll);
-            }
-        }
-        return null;
+        ModContentPack? self = LoadedModManager.RunningModsListForReading
+            .FirstOrDefault(pack => pack.PackageId.Equals(SelfPackageId, StringComparison.OrdinalIgnoreCase));
+        return self == null ? null : Path.Combine(self.RootDir, ViewerFolder, ViewerDll);
     }
 }
