@@ -52,6 +52,8 @@ internal sealed class LogViewerWindow : LightweaveWindow {
 
     protected override bool DrawScrim => false;
 
+    protected override bool KeepOnTop => true;
+
     protected override LightweaveNode? Header() {
         Action invalidate = MakeInvalidate();
 
