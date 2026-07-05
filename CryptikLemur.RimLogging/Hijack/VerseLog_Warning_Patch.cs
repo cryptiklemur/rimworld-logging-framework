@@ -1,20 +1,21 @@
 using System.Diagnostics.CodeAnalysis;
-using HarmonyLib;
+using Concord;
 using CryptikLemur.RimLogging.Capture;
 using CryptikLemur.RimLogging.Pipeline;
 
 namespace CryptikLemur.RimLogging.Hijack;
 
-[HarmonyPatch(typeof(Verse.Log), nameof(Verse.Log.Warning), typeof(string))]
+[Patch(typeof(Verse.Log))]
 internal static class VerseLog_Warning_Patch
 {
+    [Inject(At.Head, nameof(Verse.Log.Warning), parameterTypes: [typeof(string)])]
     [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed",
-        Justification = "Invoked by Harmony via reflection")]
-    static bool Prefix(string text)
+        Justification = "Invoked by Concord via the woven wrapper")]
+    static Control Prefix(string text)
     {
-        if (ReentryGuard.IsInsideSink) return true;
+        if (ReentryGuard.IsInsideSink) return Control.Continue;
         (string channel, string? mod) = VerseLogPatchHelpers.ResolveCaller();
         Log.EmitCaptured(LogLevel.Warn, channel, text, mod: mod);
-        return false;
+        return Control.Cancel;
     }
 }

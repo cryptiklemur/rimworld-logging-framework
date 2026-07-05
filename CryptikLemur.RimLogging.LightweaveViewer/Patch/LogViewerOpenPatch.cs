@@ -1,19 +1,20 @@
-using HarmonyLib;
+using Concord;
 using Verse;
 
 namespace CryptikLemur.RimLogging.LightweaveViewer;
 
-[HarmonyPatch(typeof(Verse.Log), nameof(Verse.Log.TryOpenLogWindow))]
+[Patch(typeof(Verse.Log))]
 internal static class LogViewerOpenPatch {
-    private static bool Prefix() {
+    [Inject(At.Head, nameof(Verse.Log.TryOpenLogWindow))]
+    private static Control Prefix() {
         LightweaveLogSink? sink = LogViewerBoot.Sink;
         WindowStack? windowStack = Find.WindowStack;
         if (sink == null || windowStack == null) {
-            return true;
+            return Control.Continue;
         }
         if (windowStack.WindowOfType<LogViewerWindow>() == null) {
             windowStack.Add(new LogViewerWindow(sink));
         }
-        return false;
+        return Control.Cancel;
     }
 }

@@ -1,24 +1,24 @@
-using HarmonyLib;
-using LudeonTK;
+using Concord;
 using UnityEngine;
 using Verse;
 
 namespace CryptikLemur.RimLogging.LightweaveViewer;
 
-[HarmonyPatch(typeof(DebugWindowsOpener), "ToggleLogWindow")]
-internal static class DebugLogTogglePatch {
-    private static bool Prefix() {
+[Patch]
+internal abstract class DebugLogTogglePatch : DebugWindowsOpener {
+    [Inject(At.Head, "ToggleLogWindow")]
+    private Control Prefix() {
         if (Event.current != null && Event.current.shift) {
-            return true;
+            return Control.Continue;
         }
         LightweaveLogSink? sink = LogViewerBoot.Sink;
         WindowStack? windowStack = Find.WindowStack;
         if (sink == null || windowStack == null) {
-            return true;
+            return Control.Continue;
         }
         if (!windowStack.TryRemove(typeof(LogViewerWindow))) {
             windowStack.Add(new LogViewerWindow(sink));
         }
-        return false;
+        return Control.Cancel;
     }
 }

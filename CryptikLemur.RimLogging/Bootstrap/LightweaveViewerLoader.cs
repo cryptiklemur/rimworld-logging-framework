@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using HarmonyLib;
+using Concord;
 using Verse;
 
 namespace CryptikLemur.RimLogging.Bootstrap;
@@ -13,7 +13,7 @@ namespace CryptikLemur.RimLogging.Bootstrap;
 /// it at mod-load time (its base types live in Lightweave, which loads after RimLogging). Loading it
 /// here, at <see cref="StaticConstructorOnStartup"/>, runs after every mod's assemblies are present, so
 /// all Lightweave references resolve. This type holds no compile-time reference to the viewer or to
-/// Lightweave; it drives them purely through reflection and Harmony.
+/// Lightweave; it drives them purely through reflection and Concord.
 /// </summary>
 [StaticConstructorOnStartup]
 internal static class LightweaveViewerLoader
@@ -47,7 +47,7 @@ internal static class LightweaveViewerLoader
             viewer.GetType(BootTypeName)
                 ?.GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
                 ?.Invoke(null, null);
-            new Harmony("cryptiklemur.rimlogging.lightweaveviewer").PatchAll(viewer);
+            Patcher.Apply(viewer);
         }
         catch (Exception ex)
         {

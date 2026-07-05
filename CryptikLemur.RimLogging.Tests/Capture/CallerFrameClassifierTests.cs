@@ -52,6 +52,15 @@ public class CallerFrameClassifierTests
     }
 
     [Fact]
+    public void IsInternalFrame_ConcordNamespace_IsSkipped()
+    {
+        // Concord weaves the Verse.Log hijack wrappers, so its frames sit between the real
+        // caller and the sink and must be skipped like the legacy Harmony ones.
+        Assert.True(CallerFrameClassifier.IsInternalFrame("Concord.Emit.WrapperComposer", "Concord"));
+        Assert.True(CallerFrameClassifier.IsInternalFrame("Concord.RimWorld.RimWorldAdapter", "ConcordRimWorld"));
+    }
+
+    [Fact]
     public void IsInternalFrame_RegularModFrame_IsNotSkipped()
     {
         Assert.False(CallerFrameClassifier.IsInternalFrame("Verse.Log", "Assembly-CSharp"));

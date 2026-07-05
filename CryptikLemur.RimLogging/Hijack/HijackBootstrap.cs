@@ -1,3 +1,4 @@
+using Concord;
 using CryptikLemur.RimLogging.Bootstrap;
 using CryptikLemur.RimLogging.Capture;
 
@@ -6,7 +7,7 @@ namespace CryptikLemur.RimLogging.Hijack;
 internal static class HijackBootstrap
 {
     private static volatile bool _installed;
-    private static HarmonyLib.Harmony? _harmony;
+    private static IPatchHandle? _patches;
 
     internal static bool Install()
     {
@@ -22,9 +23,9 @@ internal static class HijackBootstrap
             Verse.Log.Warning($"[RimLogging] mod-name provider failed: {ex.GetType().Name}: {ex.Message}");
         Sinks.VerseLogSink.VanillaWriter = VanillaBufferWriteback.Write;
         VerseLogBackfill.Drain();
-        _harmony = new HarmonyLib.Harmony("CryptikLemur.RimLogging");
-        _harmony.PatchAll(typeof(HijackBootstrap).Assembly);
+        _patches = Patcher.Apply(typeof(HijackBootstrap).Assembly);
         UnityLogBridge.Install();
+        DegradedMode.ClaimHijack();
         _installed = true;
         return true;
     }
@@ -32,10 +33,12 @@ internal static class HijackBootstrap
     internal static void UninstallForTests()
     {
         UnityLogBridge.Uninstall();
-        _harmony?.UnpatchAll("CryptikLemur.RimLogging");
+        _patches?.Dispose();
+        _patches = null;
         Sinks.VerseLogSink.VanillaWriter = null;
         AssemblyChannelCache.OnResolverError = null;
         ModNameCache.OnProviderError = null;
+        DegradedMode.ReleaseHijackForTests();
         _installed = false;
     }
 }

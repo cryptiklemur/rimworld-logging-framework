@@ -8,12 +8,13 @@ namespace CryptikLemur.RimLogging.Capture;
 /// mod) or to a real caller (which should win channel attribution).
 /// </summary>
 /// <remarks>
-/// 0Harmony.dll bundles its detour engine and analysis libraries (MonoMod, Mono.Cecil,
-/// Iced, Microsoft.Cci, plus assorted System.* polyfills) under namespaces other than
-/// <c>HarmonyLib.*</c>. A namespace-only skip therefore lets MonoMod frames through and,
-/// because brrainz.harmony is the mod that ships 0Harmony.dll, every patched call gets
-/// misattributed to <c>Mod.brrainz.harmony</c>. Skipping by assembly name (and by the
-/// MonoMod namespace independently, for defence-in-depth) closes the gap.
+/// Runtime patchers bundle their detour engine and analysis libraries (MonoMod, Mono.Cecil,
+/// Iced, Microsoft.Cci, plus assorted System.* polyfills) under namespaces other than their
+/// own top-level one. A namespace-only skip therefore lets MonoMod frames through and, because
+/// the patcher mod is the one that ships those assemblies, every patched call gets misattributed
+/// to that mod. Skipping by assembly name (and by the MonoMod / patcher namespaces independently,
+/// for defence-in-depth) closes the gap. Concord weaves its wrappers through the same MonoMod
+/// stack, so <c>Concord.*</c> frames are skipped alongside the legacy Harmony ones.
 /// </remarks>
 internal static class CallerFrameClassifier
 {
@@ -36,6 +37,7 @@ internal static class CallerFrameClassifier
     {
         if (declaringNamespace == null) return true;
         if (declaringNamespace.StartsWith("HarmonyLib.", StringComparison.Ordinal)) return true;
+        if (declaringNamespace.StartsWith("Concord.", StringComparison.Ordinal)) return true;
         if (declaringNamespace.StartsWith("MonoMod.", StringComparison.Ordinal)) return true;
         if (declaringNamespace.StartsWith("CryptikLemur.RimLogging.", StringComparison.Ordinal)) return true;
         if (string.Equals(assemblyName, HarmonyAssemblyName, StringComparison.Ordinal)) return true;
