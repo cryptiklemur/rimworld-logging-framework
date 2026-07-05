@@ -7,8 +7,8 @@ namespace CryptikLemur.RimLogging;
 public static class BuildInfo
 {
     /// <summary>Framework revision string reported in bundle metadata (placeholder value <c>"0.0.0"</c>).</summary>
-    public const string Revision = "1.0.10";
+    public const string Revision = "1.1.0";
 
     /// <summary>UTC build timestamp in ISO-8601 form reported in bundle metadata (placeholder epoch value).</summary>
-    public const string BuildTime = "2026-05-30T01:24:59.727Z";
+    public const string BuildTime = "2026-07-05T06:42:53.549Z";
 }
