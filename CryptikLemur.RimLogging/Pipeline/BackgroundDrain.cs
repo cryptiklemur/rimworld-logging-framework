@@ -79,7 +79,7 @@ internal sealed class BackgroundDrain : IDisposable
     private void Dispatch(LogEntry entry)
     {
         try { _dispatch(entry); }
-        catch { /* swallow — logger crash mustn't kill the drain */ }
+        catch { /* swallow: a logger crash mustn't kill the drain */ }
     }
 
     private static void Backoff(int emptyPolls)

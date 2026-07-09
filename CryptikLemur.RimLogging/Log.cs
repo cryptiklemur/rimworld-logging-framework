@@ -405,7 +405,7 @@ public static class Log
         Exception? exception,
         CallSite site)
     {
-        // Global gate — cheapest possible short-circuit. NO formatting, NO reflection.
+        // Global gate: the cheapest possible short-circuit. NO formatting, NO reflection.
         if (level < Logging.GlobalMinLevel) return;
 
         // A single stack walk, reused for both the formatted trace and the source fallback.
@@ -532,7 +532,7 @@ public static class Log
     /// <summary>
     /// Entry point for captured logs that originate outside our own call sites (the Unity
     /// bridge and the Verse.Log hijack). Builds a <see cref="LogEntry"/> with an empty
-    /// <see cref="SourceLocation"/> — the caller's file/line is meaningless for these — and
+    /// <see cref="SourceLocation"/> (the caller's file/line is meaningless for these) and
     /// the optional caller-supplied <paramref name="stackTrace"/>, then routes it through the pipeline.
     /// </summary>
     internal static void EmitCaptured(LogLevel level, string channel, string text, string? stackTrace = null, string? mod = null)

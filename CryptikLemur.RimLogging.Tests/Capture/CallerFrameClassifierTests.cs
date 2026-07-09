@@ -73,7 +73,7 @@ public class CallerFrameClassifierTests
     public void IsInternalFrame_HarmonyLibPrefixCollision_IsNotSkipped()
     {
         // Defensive: a mod that happens to have a type literally named "HarmonyLib"
-        // (no dot suffix) should not be skipped — the namespace check requires the dot.
+        // (no dot suffix) should not be skipped: the namespace check requires the dot.
         Assert.False(CallerFrameClassifier.IsInternalFrame("HarmonyLib", "SomeMod"));
         Assert.False(CallerFrameClassifier.IsInternalFrame("HarmonyLibrarian.Tools", "SomeMod"));
     }

@@ -5,7 +5,7 @@ namespace CryptikLemur.RimLogging.Sinks;
 
 /// <summary>
 /// Writes log entries back into vanilla's <c>Verse.Log</c> buffer, wrapping the
-/// prefix in a <c>&lt;color=#…&gt;</c> rich-text tag sourced from the channel's
+/// prefix in a <c>&lt;color=#RRGGBB&gt;</c> rich-text tag sourced from the channel's
 /// <see cref="ChannelDef.ColorHex"/> or, when absent, from
 /// <see cref="SeverityColors.GetHex"/>.
 /// </summary>

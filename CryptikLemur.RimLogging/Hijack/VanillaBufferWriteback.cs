@@ -18,7 +18,7 @@ internal static class VanillaBufferWriteback
     /// Writes <paramref name="coloredLine"/> into the appropriate vanilla log method based on
     /// <paramref name="level"/>, guarded by <see cref="Pipeline.ReentryGuard"/> to prevent recursion.
     /// </summary>
-    /// <param name="level">Severity level — determines which <c>Verse.Log</c> method is called.</param>
+    /// <param name="level">Severity level; determines which <c>Verse.Log</c> method is called.</param>
     /// <param name="coloredLine">Fully-rendered, color-tagged line to write.</param>
     internal static void Write(LogLevel level, string coloredLine)
     {

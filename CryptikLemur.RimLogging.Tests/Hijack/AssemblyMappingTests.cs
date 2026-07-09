@@ -37,7 +37,7 @@ public class AssemblyMappingTests : IDisposable
         // The real resolver returns "Mod." + PackageIdSanitizer.ToChannelSegment(packageId).
         // ToChannelSegment preserves case and dots for valid identifier chars, so
         // "Cosmere.Lightweave" -> "Cosmere.Lightweave" -> channel "Mod.Cosmere.Lightweave".
-        // Note: the plan guessed lowercase "Mod.cosmere.lightweave" — the actual sanitizer
+        // Note: the plan guessed lowercase "Mod.cosmere.lightweave", but the actual sanitizer
         // does NOT lowercase; case is preserved.
         string packageId = "Cosmere.Lightweave";
         string expected = "Mod." + PackageIdSanitizer.ToChannelSegment(packageId);
@@ -55,7 +55,7 @@ public class AssemblyMappingTests : IDisposable
     {
         // "Brrainz.Harmony" contains only valid chars (letters and dots).
         // ToChannelSegment preserves them as-is; dots are NOT collapsed.
-        // The plan guessed "Mod.BrrainzHarmony" (dot collapsed) — this is WRONG.
+        // The plan guessed "Mod.BrrainzHarmony" (dot collapsed), which is WRONG.
         // Actual output: "Mod.Brrainz.Harmony".
         string packageId = "Brrainz.Harmony";
         string sanitized = PackageIdSanitizer.ToChannelSegment(packageId);
@@ -144,7 +144,7 @@ public class AssemblyMappingTests : IDisposable
     [Fact]
     public void Resolve_HookReturnsNull_ReturnsNull()
     {
-        // ResolverHook is Func<Assembly, string>? — the return type is non-nullable string,
+        // ResolverHook is Func<Assembly, string>?. The return type is non-nullable string,
         // so a hook cannot return null without a null-forgiving cast. If it does (via cast),
         // the cache stores whatever the hook returned. This test documents current behavior:
         // there is no null-coercion guard inside ResolveOnce for the hook's return value,

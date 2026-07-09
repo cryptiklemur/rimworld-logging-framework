@@ -8,7 +8,7 @@ namespace CryptikLemur.RimLogging.Tests;
 
 public class LogInfoTests : LogSinkFixtureBase
 {
-    // Overload 1: params — must pass an explicit array to avoid overload 4 winning.
+    // Overload 1: params. Must pass an explicit array to avoid overload 4 winning.
     // Log.Info("template", "alice") resolves to overload 4 (channel, template) in C#.
     // To exercise overload 1 (default channel + params), pass no args or pass args as array.
     [Fact]
@@ -111,7 +111,7 @@ public class LogInfoTests : LogSinkFixtureBase
     [Fact]
     public void Info_NullTemplate_NormalisesToEmpty()
     {
-        // Overload 1 (params) with null template — no NRE expected.
+        // Overload 1 (params) with null template: no NRE expected.
         Exception? thrown = Record.Exception(() => Log.Info((string)null!));
 
         Assert.Null(thrown);
@@ -136,7 +136,7 @@ public class LogInfoTests : LogSinkFixtureBase
     [Fact]
     public void Info_MoreArgsThanHoles_DoesNotThrow()
     {
-        // Overload 4 with extra args array — MessageTemplate.Render drops extras.
+        // Overload 4 with extra args array: MessageTemplate.Render drops extras.
         Exception? thrown = Record.Exception(() =>
             Log.Info("default", "hello {Name} test-I", new object?[] { "alice", "extra" }));
 
@@ -149,7 +149,7 @@ public class LogInfoTests : LogSinkFixtureBase
     [Fact]
     public void Info_FewerArgsThanHoles_DoesNotThrow()
     {
-        // Overload 4 with fewer args than holes — unmatched holes are left as-is.
+        // Overload 4 with fewer args than holes: unmatched holes are left as-is.
         Exception? thrown = Record.Exception(() =>
             Log.Info("default", "hi {A} {B} test-J", new object?[] { "only-a" }));
 

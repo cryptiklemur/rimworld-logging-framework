@@ -65,7 +65,7 @@ internal static class SinkRegistry
             for (int i = 0; i < snap.Length; i++)
             {
                 try { snap[i].Write(entry); }
-                catch { /* swallow — a misbehaving sink must not break dispatch to the others */ }
+                catch { /* swallow: a misbehaving sink must not break dispatch to the others */ }
             }
         }
     }
@@ -76,7 +76,7 @@ internal static class SinkRegistry
         for (int i = 0; i < snap.Count; i++)
         {
             try { snap[i].Flush(); }
-            catch { /* swallow — flush failure in one sink must not block flushing the rest */ }
+            catch { /* swallow: flush failure in one sink must not block flushing the rest */ }
         }
     }
 
@@ -94,7 +94,7 @@ internal static class SinkRegistry
         for (int i = 0; i < snap.Count; i++)
         {
             try { snap[i].Dispose(); }
-            catch { /* swallow — dispose failure in one sink must not block disposing the rest */ }
+            catch { /* swallow: dispose failure in one sink must not block disposing the rest */ }
         }
     }
 
@@ -115,7 +115,7 @@ internal static class SinkRegistry
             foreach (LogEntry entry in _history)
             {
                 try { sink.Write(entry); }
-                catch { /* swallow — a sink that throws on replay must not abort registration */ }
+                catch { /* swallow: a sink that throws on replay must not abort registration */ }
             }
         }
         if (_historyCapped) return;

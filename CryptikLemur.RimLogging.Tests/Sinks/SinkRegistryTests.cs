@@ -254,7 +254,7 @@ public class SinkRegistryTests : IDisposable
         SinkRegistry.DispatchSynchronously(MakeEntry("e3"));
         SinkRegistry.DispatchSynchronously(MakeEntry("e4"));
 
-        // e1,e2 via replay then e3,e4 live — each exactly once, in order, no duplication.
+        // e1,e2 via replay then e3,e4 live: each exactly once, in order, no duplication.
         Assert.Equal(ExpectedE1ToE4, sink.Messages());
     }
 

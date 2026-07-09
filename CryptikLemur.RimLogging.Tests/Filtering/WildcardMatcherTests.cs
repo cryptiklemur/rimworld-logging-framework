@@ -28,7 +28,7 @@ public class WildcardMatcherTests
         Assert.False(WildcardMatcher.Match("Cosmere.*", "CosmereExtra"));
     }
 
-    // 4. Literal pattern matches exactly — not as prefix, not as suffix
+    // 4. Literal pattern matches exactly, not as prefix or suffix
     [Theory]
     [InlineData("Foo", true)]
     [InlineData("FooBar", false)]
@@ -38,11 +38,11 @@ public class WildcardMatcherTests
         Assert.Equal(expected, WildcardMatcher.Match("Foo", input));
     }
 
-    // 5. Generic glob "Foo.*.Bar" — dots must be present; * is middle segment
+    // 5. Generic glob "Foo.*.Bar": dots must be present; * is middle segment
     [Theory]
     [InlineData("Foo.x.Bar", true)]
-    [InlineData("Foo..Bar", true)]   // zero-length middle is ok — .* matches empty
-    [InlineData("Foo.Bar", false)]   // no dots between — the literal dots must exist
+    [InlineData("Foo..Bar", true)]   // zero-length middle is ok: .* matches empty
+    [InlineData("Foo.Bar", false)]   // no dots between: the literal dots must exist
     public void GenericGlob_MiddleWildcard(string input, bool expected)
     {
         Assert.Equal(expected, WildcardMatcher.Match("Foo.*.Bar", input));

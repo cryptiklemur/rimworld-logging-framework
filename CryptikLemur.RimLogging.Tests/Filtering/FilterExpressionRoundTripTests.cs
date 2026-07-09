@@ -20,7 +20,7 @@ public class FilterExpressionRoundTripTests
         Exception = null,
     };
 
-    // 1. Parse("level >= Warn").Match — info=false, error=true
+    // 1. Parse("level >= Warn").Match: info=false, error=true
     [Fact]
     public void LevelGteWarn_MatchInfoFalse_MatchErrorTrue()
     {
@@ -30,7 +30,7 @@ public class FilterExpressionRoundTripTests
         Assert.True(fe.Match(MakeEntry(LogLevel.Error, "default")));
     }
 
-    // 2. channel = "Cosmere.*" — matches sub-channel, not Unity
+    // 2. channel = "Cosmere.*" matches sub-channel, not Unity
     [Fact]
     public void ChannelPattern_MatchSubChannel_NotUnity()
     {
@@ -87,7 +87,7 @@ public class FilterExpressionRoundTripTests
             Assert.Equal(original.Match(entry), reparsed.Match(entry));
     }
 
-    // Task 6.7 — Representative expression evaluation matrix
+    // Task 6.7: Representative expression evaluation matrix
     // Levels:   Trace(0), Debug(1), Info(2), Warn(3), Error(4)
     // Channels: default, Cosmere.Roshar, Cosmere.Roshar.Surgebinding, Unity, Mod.foo
 
@@ -179,7 +179,7 @@ public class FilterExpressionRoundTripTests
         Assert.Equal(expected, fe.Match(MakeEntry(lvl, ch)));
     }
 
-    // Task 6.8 — TryParse error-handling
+    // Task 6.8: TryParse error-handling
 
     // 1. Valid input: returns true, non-null result, null error
     [Fact]
@@ -192,7 +192,7 @@ public class FilterExpressionRoundTripTests
         Assert.Null(err);
     }
 
-    // 2. Truncated input "level >= " — missing level literal
+    // 2. Truncated input "level >= ": missing level literal
     [Fact]
     public void TryParse_TruncatedLevelExpression_ReturnsFalseWithPositionInfo()
     {
@@ -204,7 +204,7 @@ public class FilterExpressionRoundTripTests
         Assert.Contains("9", err);  // End token Pos = input.Length = 9
     }
 
-    // 3. Empty input — parser throws on the End token
+    // 3. Empty input: parser throws on the End token
     [Fact]
     public void TryParse_EmptyInput_ReturnsFalseWithPositionInfo()
     {

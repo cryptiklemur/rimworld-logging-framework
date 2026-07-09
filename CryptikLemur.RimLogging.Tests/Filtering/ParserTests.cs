@@ -47,7 +47,7 @@ public class ParserTests
         Assert.Equal(LogLevel.Debug, right.RightValue);
     }
 
-    // 3b. Precedence: A OR B AND C should parse as OR(A, AND(B, C)) — AND binds tighter
+    // 3b. Precedence: A OR B AND C should parse as OR(A, AND(B, C)): AND binds tighter
     [Fact]
     public void Precedence_AndBindsTighterThanOr()
     {
@@ -127,7 +127,7 @@ public class ParserTests
     [Fact]
     public void MissingOperator_ThrowsFormatException()
     {
-        // "level Info" — lexer accepts both as valid tokens but parser sees no operator between them
+        // "level Info": lexer accepts both as valid tokens but parser sees no operator between them
         Assert.Throws<FormatException>(() => Parser.Parse("level Info"));
     }
 
@@ -143,7 +143,7 @@ public class ParserTests
     [Fact]
     public void ChannelWithLevelLiteralRhs_ThrowsExpectedStringLiteral()
     {
-        // channel = level — LevelIdent is not a StringLiteral
+        // channel = level: LevelIdent is not a StringLiteral
         FormatException ex = Assert.Throws<FormatException>(() => Parser.Parse("channel = level"));
 
         Assert.Contains("Expected string literal", ex.Message);
@@ -152,7 +152,7 @@ public class ParserTests
     [Fact]
     public void ChannelWithGteOperator_ThrowsExpectedEqOrNeq()
     {
-        // channel >= "x" — only = and != are valid for channel
+        // channel >= "x": only = and != are valid for channel
         FormatException ex = Assert.Throws<FormatException>(() => Parser.Parse("channel >= \"x\""));
 
         Assert.Contains("'='", ex.Message);

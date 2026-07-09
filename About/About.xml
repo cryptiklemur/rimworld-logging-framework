@@ -18,7 +18,7 @@
     </loadAfter>
     <description>A public logging framework for RimWorld mods.
 
-Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. Features hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and an expression-based filter DSL.
+Replaces vanilla and Unity logging with a structured, channel-based, multi-sink pipeline. It has hierarchical channels (XML-defined or transient), Serilog-style templated messages with structured context, and an expression-based filter DSL.
 
 Other mods can depend on this and call CryptikLemur.RimLogging.Log.Info / Warn / Error / Fatal directly. Vanilla Verse.Log and UnityEngine.Debug.Log calls are also captured and routed through the framework.
 

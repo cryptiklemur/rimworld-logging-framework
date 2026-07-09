@@ -154,7 +154,7 @@ public class LexerTests
         Assert.Equal(0, tokens[0].Pos);
     }
 
-    // 6. Whitespace is skipped — no token emitted for spaces/tabs
+    // 6. Whitespace is skipped: no token emitted for spaces/tabs
     [Fact]
     public void Whitespace_IsSkipped()
     {
@@ -255,7 +255,7 @@ public class LexerTests
     [Fact]
     public void PositionTracking_OpGteHasCorrectPos()
     {
-        // "level   >=   Info" — '>' is at index 8
+        // "level   >=   Info": '>' is at index 8
         string input = "level   >=   Info";
         List<Token> tokens = Lexer.Tokenize(input);
 
