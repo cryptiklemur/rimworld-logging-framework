@@ -67,10 +67,8 @@ The first string argument is the channel only when a later argument disambiguate
 - [Settings and bug bundles](docs/settings.md): the mod settings page and the share-bundle payload.
 - [Bundle upload worker](worker/README.md): the Cloudflare Worker behind bug-report uploads.
 
-## Development
+## Contributing
 
-`make build`, `make test`, and `make format` cover the solution. Versions come from [Conventional Commits](https://www.conventionalcommits.org/) via semantic-release; releases are git tags, with stable cut from `main` and prereleases from `beta`.
-
-English is the source language for translations; corrections to the bundled Chinese Simplified, French, Spanish, or German strings are welcome via PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for build commands, commit conventions, and translation notes.
 
 MIT licensed.
