@@ -3,35 +3,18 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=cryptiklemur_rimworld-logging-framework&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=cryptiklemur_rimworld-logging-framework)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=cryptiklemur_rimworld-logging-framework&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=cryptiklemur_rimworld-logging-framework)
 
-A public, structured logging framework for RimWorld 1.6+ mods.
-
-## What it is
-
-Replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with a single structured pipeline:
+A public, structured logging framework for RimWorld 1.6+ mods. It replaces vanilla `Verse.Log` and `UnityEngine.Debug.Log` with one structured, filterable pipeline that every dependent mod shares.
 
 - Hierarchical channels (XML defs or transient) with prefix-based resolution.
-- Serilog-style templated messages: `Log.Info("player {Name} died at {Hp}hp", "Bob", 5)`.
-- Anonymous-object structured context: `Log.Info("died", new { pawn, hp })`.
+- Serilog-style templated messages plus anonymous-object structured context.
 - Six levels: `Trace`, `Debug`, `Info`, `Warn`, `Error`, `Fatal`.
-- Multi-sink output: Verse log writeback, rolling text file, rolling NDJSON file, in-memory (tests), plus a plugin sink API.
-- Expression-based filter DSL for the in-game viewer (`level >= Warn OR channel = "Cosmere.*"`).
-- Three-pane in-game log viewer, shipped with this mod and activated when [Lightweave](https://github.com/RimworldCosmere/Lightweave) is installed.
-- Lock-free MPSC queue + background drain. Synchronous bypass for `Error` / `Fatal`.
-
-## Modules
-
-| Assembly | Depends on | Purpose |
-|---|---|---|
-| `CryptikLemur.RimLogging` | Harmony, RimWorld 1.6 | Core pipeline, sinks, channels, DSL parser, Verse.Log + Unity hijack. |
-| `CryptikLemur.RimLogging.LightweaveViewer` | Core, [Lightweave](https://github.com/RimworldCosmere/Lightweave) | The three-pane in-game log viewer. Ships in this mod under `LightweaveViewer/` but is only loaded when Lightweave is active. |
-
-The three-pane in-game log viewer ships with this mod as a companion assembly built on the [Lightweave](https://github.com/RimworldCosmere/Lightweave) UI framework. Because the viewer references Lightweave types, it is loaded late (after all mods are present) and only when `Cosmere.Lightweave` is active — so RimLogging works fine on its own, and the viewer lights up automatically once you also install Lightweave.
+- Multi-sink output (Verse writeback, rolling text/NDJSON files, in-memory) with a plugin sink API.
+- Lock-free MPSC queue with a background drain; synchronous bypass for `Error` / `Fatal`.
+- Three-pane in-game log viewer with an expression filter DSL, active when [Lightweave](https://github.com/RimworldCosmere/Lightweave) is installed. Without Lightweave, logging still works and you use the vanilla log window.
 
 ## Install
 
-### As a Steam Workshop dependency (recommended for shipped mods)
-
-End-users install the Workshop mod once and every consumer mod shares a single dll. Declare it in your `About/About.xml`:
+As a Steam Workshop dependency (recommended for shipped mods): end users install the Workshop mod once and every consumer mod shares one dll. Declare it in your `About/About.xml`:
 
 ```xml
 <modDependencies>
@@ -46,24 +29,18 @@ End-users install the Workshop mod once and every consumer mod shares a single d
 </loadAfter>
 ```
 
-### As a NuGet package (bundled)
+Or bundle it from NuGet. The dll (and its `System.Text.Json` runtime dependencies) are copied into your mod's `Assemblies/` at build time, so you don't need the Workshop dependency:
 
 ```
 dotnet add package CryptikLemur.RimLogging
 ```
 
-The dll (and its `System.Text.Json` runtime dependencies) are copied into your mod's `Assemblies/` directory at build time. No Workshop dependency required.
-
-### Recommended: also install Lightweave for the in-game viewer
-
-The three-pane in-game log viewer is built on the [Lightweave](https://github.com/RimworldCosmere/Lightweave) UI framework. RimLogging ships the viewer but only activates it when Lightweave is present, so install Lightweave alongside RimLogging to get the viewer. Without it, logging still works fully — you just use the vanilla log window instead of the three-pane viewer.
-
-## Quick start
+## Usage
 
 ```csharp
 using CryptikLemur.RimLogging;
 
-// Default channel, templated message with positional args.
+// Templated message with positional args.
 Log.Info("colony {Name} founded at {Tile}", colony.Name, colony.Tile);
 
 // Structured context from an anonymous object.
@@ -71,174 +48,29 @@ Log.Warn("low food", new { pawn, days_left = 2 });
 
 // Exceptions: pass the exception first, or fold it into the context.
 Log.Error(ex, "save failed");
-Log.Error("save failed", new { ex, path });
 
-// Explicit channel + structured context.
+// Explicit channel.
 Log.Info("Cosmere.Roshar.Surgebinding", "bond formed", new { spren = spren.Label });
 
-// Explicit channel + templated args: pass the args as an explicit array so the
-// channel overload is selected (a bare trailing value binds as structured context).
+// Explicit channel + templated args: pass an explicit array so the channel
+// overload is selected (a bare trailing value binds as structured context).
 Log.Info("Cosmere.Roshar.Surgebinding", "bond formed with {Spren}", new object?[] { spren.Label });
-
-// Lower-severity levels.
-Log.Trace("tick {N}", ticks);
-Log.Debug("pathfinding cache miss");
-Log.Fatal("unrecoverable: {Reason}", reason);
 ```
 
-The first string argument is the channel only when a later argument disambiguates the overload; `Log.Info("text", arg)` treats `"text"` as the message. Formatting is lazy: if no registered sink accepts the entry's level, the template is never rendered and the context object is never reflected.
+The first string argument is the channel only when a later argument disambiguates the overload; `Log.Info("text", arg)` treats `"text"` as the message. Formatting is lazy: if no registered sink accepts the entry's level, the template is never rendered.
 
-## Channels
+## Docs
 
-Channels are dotted, hierarchical names. Define them in XML to set defaults, or just pass any string at call time for a transient channel.
+- [Channels](docs/channels.md): ChannelDef XML, field reference, prefix resolution, built-in channels.
+- [Filter DSL](docs/filter-dsl.md): grammar and examples for the viewer's filter box.
+- [Custom sinks](docs/sinks.md): the `ILogSink` API, SinkDef XML, built-in sinks.
+- [Settings and bug bundles](docs/settings.md): the mod settings page and the share-bundle payload.
+- [Bundle upload worker](worker/README.md): the Cloudflare Worker behind bug-report uploads.
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<Defs>
-    <CryptikLemur.RimLogging.Channels.ChannelDef>
-        <defName>Cosmere.Roshar.Surgebinding</defName>
-        <label>Surgebinding</label>
-        <description>Stormlight bonding, surge investiture, oath progression.</description>
-        <defaultLevel>Debug</defaultLevel>
-        <color>(0.7, 0.85, 1.0)</color>
-        <captureStackAt>Error</captureStackAt>
-        <destinations>
-            <li>RollingText</li>
-        </destinations>
-        <format>[{Channel}] {Message}</format>
-    </CryptikLemur.RimLogging.Channels.ChannelDef>
-</Defs>
-```
+## Development
 
-> The XML element name is the fully namespace-qualified type, `CryptikLemur.RimLogging.Channels.ChannelDef`, not `RimLogging.ChannelDef`.
+`make build`, `make test`, and `make format` cover the solution. Versions come from [Conventional Commits](https://www.conventionalcommits.org/) via semantic-release; releases are git tags, with stable cut from `main` and prereleases from `beta`.
 
-`ChannelDef` fields:
+English is the source language for translations; corrections to the bundled Chinese Simplified, French, Spanish, or German strings are welcome via PR.
 
-| Field | Default | Meaning |
-|---|---|---|
-| `defaultLevel` | `Info` | Minimum level emitted on this channel. |
-| `color` | none | RGB tuple for the viewer, e.g. `(0.7, 0.85, 1.0)`. |
-| `captureStackAt` | `Error` | Level at/above which a stack trace is captured. |
-| `destinations` | all sinks | Sink defNames this channel routes to (empty = every registered sink). |
-| `format` | default | Per-channel format template override. |
-
-**Transient fallback / prefix resolution:** when you log to a channel name with no exact `ChannelDef`, resolution walks up the dotted prefix to the nearest registered ancestor, then falls back to the built-in `default` channel. So `Cosmere.Roshar.Surgebinding.Windrunner` uses the `Cosmere.Roshar.Surgebinding` def if that is the closest registered ancestor.
-
-Built-in channels: `default` (catch-all), `Vanilla` (captured `Verse.Log` calls), `Unity` (captured `UnityEngine.Debug.Log` calls).
-
-## Filter DSL
-
-Used by the in-game viewer to filter the live log. Grammar:
-
-```
-expr    := orExpr
-orExpr  := andExpr ( "OR" andExpr )*
-andExpr := notExpr ( "AND" notExpr )*
-notExpr := "NOT" notExpr | "(" expr ")" | term
-term    := "level" levelOp LEVEL | "channel" strOp STRING
-levelOp := "=" | "!=" | "<" | "<=" | ">" | ">="
-strOp   := "=" | "!="
-LEVEL   := Trace | Debug | Info | Warn | Error | Fatal
-STRING  := "double-quoted, supports * wildcards"
-```
-
-Channel string matching supports `*` wildcards; a trailing `.*` matches the channel itself or any dotted descendant.
-
-Examples:
-
-```
-level >= Warn
-level >= Warn OR channel = "Cosmere.*"
-channel = "Cosmere.Roshar.*" AND level >= Debug
-NOT (channel = "Unity")
-level != Trace AND NOT channel = "Vanilla"
-```
-
-## Custom sinks
-
-Implement `ILogSink` and register it, either from code or via a `SinkDef`.
-
-```csharp
-public sealed class MySink : ILogSink
-{
-    public string Name => "MySink";
-    public LogLevel MinLevel => LogLevel.Info;
-
-    public void Write(LogEntry entry) { /* render or store entry */ }
-    public void Flush() { /* flush buffers */ }
-    public void Dispose() { /* close handles */ }
-}
-
-// Register from a StaticConstructorOnStartup or your mod ctor:
-Logging.RegisterSink(new MySink());
-```
-
-Or load it from XML so the bootstrap phase instantiates it:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<Defs>
-    <CryptikLemur.RimLogging.Sinks.SinkDef>
-        <defName>MySink</defName>
-        <label>My Sink</label>
-        <sinkClass>MyMod.MySink, MyMod</sinkClass>
-        <minLevel>Info</minLevel>
-        <enabledByDefault>true</enabledByDefault>
-    </CryptikLemur.RimLogging.Sinks.SinkDef>
-</Defs>
-```
-
-`sinkClass` is an assembly-qualified type name. The implementation needs a public parameterless constructor for XML loading. Built-in sinks: `VerseLog`, `RollingText` (enabled by default), `RollingJson` (NDJSON, off by default).
-
-## Settings
-
-The in-game mod settings page exposes:
-
-- **Global minimum level** (`globalMinLevel`) - drops every entry below this level before any sink sees it.
-- **Log directory** (`logDirectory`) - where rolling files are written; normalized to a default under the game's persistent data path when left blank.
-- **Retention count** (`retentionCount`) - number of rotated log files kept.
-- **Bundle proxy URL** (`proxyUrl`) - upload endpoint for bug-report bundles.
-- **Combine message and stack trace** (`logViewerCombinedDetail`) - when Lightweave's viewer is active, shows the message and stack trace together in the detail pane.
-- **Filter presets** - saved name/expression pairs for the viewer's filter DSL.
-
-All settings persist across restarts via RimWorld's Scribe system.
-
-## Bug bundle
-
-The viewer's "share bundle" button serializes a JSON payload and uploads it through the configured proxy, then copies the returned URL to your clipboard (with a toast confirmation). The payload contains:
-
-- RimWorld version and framework version.
-- The active mod list (name, packageId, version, active flag).
-- Recent log entries (timestamp, level, channel, source, message, structured context, stack trace).
-
-Override the upload endpoint with the `proxyUrl` setting if you self-host the proxy.
-
-## Versioning
-
-Versions are derived automatically from [Conventional Commits](https://www.conventionalcommits.org/) via semantic-release:
-
-- `fix:` / `perf:` -> patch
-- `feat:` -> minor
-- `BREAKING CHANGE:` / `!` -> major
-
-Releases are git tags. Stable releases are cut from `main`; the `beta` branch publishes prereleases.
-
-## Building
-
-```
-make build      # whole solution
-make test       # xunit suites
-make format     # dotnet format
-```
-
-## Translations
-
-English is the source language. The other bundled translations (Chinese Simplified, French, Spanish, German) may be inaccurate. Corrections are welcome via pull request.
-
-## Contributing
-
-- Run `make build` and `make test` green before opening a PR.
-
-## License
-
-MIT.
+MIT licensed.
